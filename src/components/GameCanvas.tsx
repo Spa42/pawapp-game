@@ -737,7 +737,8 @@ const config: Phaser.Types.Core.GameConfig = {
     // Start with PreloaderScene, then MainScene
     scene: [PreloaderScene, MainScene],
     scale: {
-        mode: Phaser.Scale.ScaleModes.RESIZE,
+        // Change scale mode to ENVELOP to maintain aspect ratio while filling screen
+        mode: Phaser.Scale.ScaleModes.ENVELOP, // Was RESIZE
         autoCenter: Phaser.Scale.Center.CENTER_BOTH,
         fullscreenTarget: 'phaser-game-container',
     },
