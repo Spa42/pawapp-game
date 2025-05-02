@@ -107,6 +107,14 @@ class MainScene extends Phaser.Scene {
     private powerupTypes: string[] = ['powerup_red_pot']; // Was 'powerup_gold_collar'
     private powerupSpawnIntervalBase: number = 15000; // ms, average interval
 
+    // Add viewport awareness to adjust UI based on screen size
+    private isMobile: boolean = false;
+    private viewport = {
+        width: 0,
+        height: 0,
+        isPortrait: false
+    };
+
     constructor() {
         super({ key: 'MainScene' });
     }
@@ -122,6 +130,14 @@ class MainScene extends Phaser.Scene {
         this.isInvincible = false;
         this.hasGoldCollar = false;
         this.isSlowMode = false; // Initialize slow mode
+
+        // --- Set viewport details for responsive design ---
+        this.viewport.width = this.scale.width;
+        this.viewport.height = this.scale.height;
+        this.viewport.isPortrait = this.viewport.height > this.viewport.width;
+        this.isMobile = this.viewport.width < 768 || ('ontouchstart' in window);
+        
+        console.log(`Game viewport: ${this.viewport.width}x${this.viewport.height}, Mobile: ${this.isMobile}`);
 
         // --- Parallax Background using TileSprites ---
         const { width, height } = this.scale;
@@ -196,11 +212,17 @@ class MainScene extends Phaser.Scene {
         // --- Score & Rescues Display ---
         this.score = 0;
         this.rescues = 0;
-        this.scoreText = this.add.text(16, 16, this.getLocalizedScoreText(), { 
-            fontSize: '24px', color: '#ffffff' 
+        
+        // Use responsive font sizes based on device
+        const textSize = this.isMobile ? '18px' : '24px';
+        const textPadding = this.isMobile ? 10 : 16;
+        
+        this.scoreText = this.add.text(textPadding, textPadding, this.getLocalizedScoreText(), { 
+            fontSize: textSize, color: '#ffffff' 
         }).setDepth(10);
-        this.rescuesText = this.add.text(16, 48, this.getLocalizedRescuesText(), { 
-            fontSize: '24px', color: '#ffffff' 
+        
+        this.rescuesText = this.add.text(textPadding, this.isMobile ? 35 : 48, this.getLocalizedRescuesText(), { 
+            fontSize: textSize, color: '#ffffff' 
         }).setDepth(10);
         
         // --- Background Music ---
@@ -464,38 +486,70 @@ class MainScene extends Phaser.Scene {
         const finalRescues = this.rescues;
         console.log(`Game Over! Score: ${finalScore}, Rescues: ${finalRescues}`);
 
-        // --- End Screen UI --- 
+        // --- End Screen UI with responsive styling --- 
         const centerX = this.scale.width / 2;
         const centerY = this.scale.height / 2;
-        const buttonStyle = { fontSize: '32px', color: '#ffffff', backgroundColor: '#555555', padding: { x: 20, y: 10 } };
-        const scoreStyle = { fontSize: '28px', color: '#ffffff' };
+        
+        // Responsive font sizes
+        const titleSize = this.isMobile ? '48px' : '64px';
+        const scoreSize = this.isMobile ? '22px' : '28px';
+        const buttonTextSize = this.isMobile ? '24px' : '32px';
+        const joinButtonTextSize = this.isMobile ? '28px' : '36px';
+        
+        // Button layout adjustments
+        const buttonYOffset = this.isMobile ? 30 : 50;
+        const joinButtonYOffset = this.isMobile ? 100 : 120;
+        
+        const buttonStyle = { 
+            fontSize: buttonTextSize, 
+            color: '#ffffff', 
+            backgroundColor: '#555555', 
+            padding: { x: 20, y: 10 },
+            shadow: { color: '#000000', fill: true, offsetX: 2, offsetY: 2, blur: 4 }
+        };
+        
+        const scoreStyle = { 
+            fontSize: scoreSize, 
+            color: '#ffffff',
+            shadow: { color: '#000000', fill: true, offsetX: 1, offsetY: 1, blur: 2 } 
+        };
+        
         // Define a specific style for the Join button
-        const joinButtonStyle = { fontSize: '36px', color: '#ffffff', backgroundColor: '#007bff', padding: { x: 25, y: 15 } }; // Larger and blue
+        const joinButtonStyle = { 
+            fontSize: joinButtonTextSize, 
+            color: '#ffffff', 
+            backgroundColor: '#007bff', 
+            padding: { x: 25, y: 15 },
+            shadow: { color: '#000000', fill: true, offsetX: 2, offsetY: 2, blur: 4 }
+        };
 
-        // Semi-transparent background overlay (optional)
+        // Semi-transparent background overlay
         this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x000000, 0.7).setDepth(10);
 
         // Game Over Text
-        this.add.text(centerX, centerY - 150, localizationManager.getTranslation('gameOver'), { 
-            fontSize: '64px', color: '#ff0000' 
+        this.add.text(centerX, centerY - (this.isMobile ? 120 : 150), localizationManager.getTranslation('gameOver'), { 
+            fontSize: titleSize, 
+            color: '#ff0000',
+            shadow: { color: '#000000', fill: true, offsetX: 2, offsetY: 2, blur: 5 }
         }).setOrigin(0.5).setDepth(11);
 
         // Final Score Text
-        this.add.text(centerX, centerY - 80, 
+        this.add.text(centerX, centerY - (this.isMobile ? 60 : 80), 
             localizationManager.getFormattedTranslation('finalScore', { score: finalScore }), 
             scoreStyle
         ).setOrigin(0.5).setDepth(11);
 
         // Final Rescues Text
-        this.add.text(centerX, centerY - 40, 
+        this.add.text(centerX, centerY - (this.isMobile ? 25 : 40), 
             localizationManager.getFormattedTranslation('finalRescues', { rescues: finalRescues }), 
             scoreStyle
         ).setOrigin(0.5).setDepth(11);
 
         // Play Again Button
-        const playAgainButton = this.add.text(centerX, centerY + 50, localizationManager.getTranslation('playAgain'), buttonStyle)
+        const playAgainButton = this.add.text(centerX, centerY + buttonYOffset, localizationManager.getTranslation('playAgain'), buttonStyle)
             .setOrigin(0.5)
             .setDepth(11)
+            .setPadding(15, 10, 15, 10)
             .setInteractive({ useHandCursor: true });
 
         playAgainButton.on('pointerdown', () => {
@@ -504,10 +558,11 @@ class MainScene extends Phaser.Scene {
             this.scene.restart();
         });
 
-        // Join Paw App Button
-        const joinButton = this.add.text(centerX, centerY + 120, localizationManager.getTranslation('joinPawApp'), joinButtonStyle) // Use new style
+        // Join Paw App Button - Mobile optimized
+        const joinButton = this.add.text(centerX, centerY + joinButtonYOffset, localizationManager.getTranslation('joinPawApp'), joinButtonStyle)
             .setOrigin(0.5)
             .setDepth(11)
+            .setPadding(20, 15, 20, 15)
             .setInteractive({ useHandCursor: true });
 
         joinButton.on('pointerdown', () => {
@@ -664,7 +719,7 @@ class MainScene extends Phaser.Scene {
     }
 }
 
-// Define the Phaser game configuration
+// Update the scale config to handle mobile viewport better
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
     width: '100%',
@@ -684,8 +739,18 @@ const config: Phaser.Types.Core.GameConfig = {
     scale: {
         mode: Phaser.Scale.ScaleModes.RESIZE,
         autoCenter: Phaser.Scale.Center.CENTER_BOTH,
+        fullscreenTarget: 'phaser-game-container',
     },
     backgroundColor: '#2d2d2d',
+    input: {
+        activePointers: 2, // Support for multi-touch
+        touch: {
+            capture: true,
+        }
+    },
+    dom: {
+        createContainer: true
+    },
 };
 
 // Use type alias for empty props object
@@ -696,6 +761,22 @@ const GameCanvas: React.FC = () => {
     const gameContainerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
+        // Add viewport meta tags for mobile if they don't exist
+        if (!document.querySelector('meta[name="viewport"]')) {
+            const meta = document.createElement('meta');
+            meta.name = 'viewport';
+            meta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+            document.head.appendChild(meta);
+        }
+        
+        // Add touch-specific meta tags for iOS
+        if (!document.querySelector('meta[name="apple-mobile-web-app-capable"]')) {
+            const meta = document.createElement('meta');
+            meta.name = 'apple-mobile-web-app-capable';
+            meta.content = 'yes';
+            document.head.appendChild(meta);
+        }
+
         if (gameInstance.current || !gameContainerRef.current) {
             return;
         }
@@ -706,7 +787,15 @@ const GameCanvas: React.FC = () => {
         };
     }, []);
 
-    return <div id="phaser-game-container" ref={gameContainerRef} style={{ width: '100%', height: '100%' }} />;
+    return <div id="phaser-game-container" ref={gameContainerRef} style={{ 
+        width: '100%', 
+        height: '100%',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        overflow: 'hidden',
+        touchAction: 'none' // Prevent default touch behaviors
+    }} />;
 };
 
 export default GameCanvas; 
