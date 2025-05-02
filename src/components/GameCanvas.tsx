@@ -104,13 +104,17 @@ class MainScene extends Phaser.Scene {
     private obstacleInitialSpawnDelay: number = 2000; // ms
     private obstacleSpawnIntervalBase: number = 2500; // ms, will decrease with speed
     private obstacleVelocityXBase: number = -200; // pixels/sec, will increase with speed
-    private obstacleTypes: string[] = ['obstacle_bench', 'obstacle_bush', 'obstacle_fountain'];
+    private obstacleTypes: string[] = ['obstacle_bench', 'obstacle_bush', 'obstacle_fountain']; // Restore definition
     private strayTypes: string[] = ['stray_dog_0', 'stray_cat_0'];
     private straySpawnIntervalBase: number = 5000; // ms, average interval
     private rescuePoints: number = 50;
     private invincibilityDuration: number = 2000; // 2 seconds in ms
-    private powerupTypes: string[] = ['powerup_red_pot'];
+    private powerupTypes: string[] = ['powerup_red_pot', 'powerup_feather']; // Keep feather powerup
     private powerupSpawnIntervalBase: number = 15000; // ms, average interval
+
+    // Double Jump State
+    private canDoubleJump: boolean = false;
+    private jumpsMade: number = 0;
 
     constructor() {
         super({ key: 'MainScene' });
@@ -126,6 +130,8 @@ class MainScene extends Phaser.Scene {
         this.isInvincible = false;
         this.hasGoldCollar = false;
         this.isSlowMode = false;
+        this.canDoubleJump = false; // Reset double jump state
+        this.jumpsMade = 0;
         
         // Use BASE_WIDTH and BASE_HEIGHT for positioning
         const width = BASE_WIDTH;
@@ -165,7 +171,7 @@ class MainScene extends Phaser.Scene {
         const playerY = height - (groundDisplayHeight + 50); // Position above the calculated ground height
         this.player = this.physics.add.sprite(playerX, playerY, 'game_atlas', 'mascot_run_0'); // Start with run frame
         this.player.setBounce(0.1);
-        this.player.setCollideWorldBounds(false); // We need world bounds if using fixed size
+        this.player.setCollideWorldBounds(true); // Re-enable world bounds collision
         this.player.setDepth(2);
         this.physics.add.collider(this.player, ground);
         console.log(`Player Y: ${this.player.y}`);
@@ -318,12 +324,22 @@ class MainScene extends Phaser.Scene {
 
     spawnPowerup() {
         if (this.isGameOver) return;
-        const powerupKey = this.powerupTypes[0];
+        const powerupTypeIndex = Phaser.Math.Between(0, this.powerupTypes.length - 1);
+        const powerupKey = this.powerupTypes[powerupTypeIndex]; // This determines the EFFECT
         // Spawn relative to BASE_WIDTH and a random height
         const spawnX = BASE_WIDTH + Phaser.Math.Between(100, 200);
-        const spawnY = BASE_HEIGHT - Phaser.Math.Between(50, 200); // Random height from bottom
-        const powerup = this.powerups?.get(spawnX, spawnY, 'game_atlas', powerupKey) as Phaser.Physics.Arcade.Sprite;
+        // Adjust spawn Y range to be higher, sometimes requiring full jump
+        const spawnY = Phaser.Math.Between(150, 350); // Was BASE_HEIGHT - Phaser.Math.Between(50, 200)
+        
+        // Get a sprite from the group
+        const powerup = this.powerups?.get(spawnX, spawnY) as Phaser.Physics.Arcade.Sprite;
+
         if (powerup) {
+            // ALWAYS set the visual appearance to powerup_red_pot
+            powerup.setTexture('game_atlas', 'powerup_red_pot'); 
+            // Keep track of the intended effect type using sprite data
+            powerup.setData('powerupEffectType', powerupKey); 
+
             powerup.setActive(true);
             powerup.setVisible(true);
             this.physics.world.enable(powerup);
@@ -341,6 +357,18 @@ class MainScene extends Phaser.Scene {
             callbackScope: this,
             loop: false
         });
+
+        // Activate specific powerup effect based on the stored effect type
+        if (powerupKey === 'powerup_red_pot') { 
+            this.activateGoldCollar();
+        } else if (powerupKey === 'powerup_feather') { 
+            this.activateDoubleJump();
+        } else if (powerupKey === 'powerup_treat_magnet') {
+            // TODO: Implement Treat Magnet activation
+            console.log('Collected Treat Magnet (Not Implemented)');
+        }
+        // Optional: Play powerup collection sound
+        // this.sound.play('sfx_powerup');
     }
 
     handlePlayerObstacleCollision(
@@ -391,15 +419,18 @@ class MainScene extends Phaser.Scene {
         if (this.isGameOver || !powerupGO.active) return;
         
         const powerupSprite = powerupGO as Phaser.Physics.Arcade.Sprite;
-        const powerupKey = powerupSprite.frame.name; // Get frame name from the sprite
+        // Get the intended effect type from sprite data
+        const effectType = powerupSprite.getData('powerupEffectType'); 
 
         // Deactivate instead of destroy
         this.powerups?.killAndHide(powerupSprite);
 
-        // Activate specific powerup effect based on the collected frame name
-        if (powerupKey === 'powerup_red_pot') { // Check for the red pot frame
-            this.activateGoldCollar(); // Still activates Gold Collar effect
-        } else if (powerupKey === 'powerup_treat_magnet') {
+        // Activate specific powerup effect based on the stored effect type
+        if (effectType === 'powerup_red_pot') { 
+            this.activateGoldCollar();
+        } else if (effectType === 'powerup_feather') { 
+            this.activateDoubleJump();
+        } else if (effectType === 'powerup_treat_magnet') {
             // TODO: Implement Treat Magnet activation
             console.log('Collected Treat Magnet (Not Implemented)');
         }
@@ -450,6 +481,16 @@ class MainScene extends Phaser.Scene {
             console.log("Gold Collar consumed!");
             // Optional: Play a specific sound for collar breaking
             // this.sound.play('sfx_collar_break');
+        }
+    }
+
+    activateDoubleJump() {
+        if (!this.canDoubleJump) {
+            this.canDoubleJump = true;
+            // Optional: Add visual indicator like tint
+            // this.player?.setTint(0xadd8e6); // Light blue tint
+            console.log("Double Jump activated!");
+            // Optional: Set a timer to deactivate if it should be temporary
         }
     }
 
@@ -597,9 +638,23 @@ class MainScene extends Phaser.Scene {
 
     jump() {
         if (this.isGameOver) return;
-        if (this.player && this.player.body?.touching.down) {
-            // this.sound.play('sfx_jump'); // Disabled audio // Play jump sound
-            this.player.setVelocityY(this.jumpVelocity);
+        if (this.player && this.player.body) {
+            const touchingDown = this.player.body.touching.down;
+
+            if (touchingDown) {
+                // Regular jump from ground
+                // this.sound.play('sfx_jump'); // Disabled audio
+                this.player.setVelocityY(this.jumpVelocity);
+                this.jumpsMade = 1;
+            } else if (this.canDoubleJump && this.jumpsMade < 2) {
+                // Double jump allowed and not already used
+                // this.sound.play('sfx_jump2'); // Optional different sound
+                this.player.setVelocityY(this.jumpVelocity * 0.85); // Slightly less powerful double jump
+                this.jumpsMade = 2;
+                // Optional: Consume double jump powerup if it's single-use
+                // this.canDoubleJump = false;
+                // this.player?.clearTint(); // Remove visual indicator if temporary
+            }
         }
     }
 

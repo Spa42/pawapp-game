@@ -5,6 +5,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import React, { useState, useEffect } from 'react';
 import localizationManager, { languageChangeEvent, Language } from '@/utils/LocalizationManager';
+import { Analytics } from "@vercel/analytics/react";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -46,7 +47,10 @@ export default function RootLayout({
 
   return (
     <html lang={lang} dir={dir}> 
-      <body className={inter.className}>{children}</body>
+      <body className={inter.className}>
+        {children}
+        <Analytics />
+      </body>
     </html>
   );
 }
