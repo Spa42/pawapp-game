@@ -1,0 +1,11 @@
+# Task ID: 5
+# Title: Obstacle System Implementation
+# Status: done
+# Dependencies: 4
+# Priority: high
+# Description: Create the obstacle system with collision detection and game-over condition.
+# Details:
+Implement the three obstacle types (park bench, waste-bin, fountain edge) with appropriate hitboxes. Create a spawn system that randomly places obstacles at appropriate intervals. Implement collision detection between player and obstacles. Add game-over condition when player collides with an obstacle. Implement palette-swapping for obstacle variety.
+
+# Test Strategy:
+Test collision detection accuracy. Verify obstacles spawn at appropriate intervals and with sufficient variety. Ensure game-over triggers correctly on collision.

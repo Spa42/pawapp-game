@@ -1,0 +1,9 @@
+{
+  "score": "Score: {score}",
+  "rescues": "Rescues: {rescues}",
+  "gameOver": "GAME OVER",
+  "finalScore": "Final Score: {score}",
+  "finalRescues": "Animals Rescued: {rescues}",
+  "playAgain": "Play Again",
+  "joinPawApp": "Join Paw App"
+} 

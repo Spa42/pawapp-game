@@ -1,0 +1,11 @@
+# Task ID: 1
+# Title: Project Setup and Configuration
+# Status: done
+# Dependencies: None
+# Priority: high
+# Description: Bootstrap the Next.js project with TypeScript, ESLint, and Prettier. Set up the basic project structure and install required dependencies.
+# Details:
+Run `pnpm create next-app` with TypeScript, ESLint, and Prettier options. Install Phaser 3.88, GSAP 4, and configure the project structure. Create basic folder structure for components, game assets, and utilities. Set up Edge runtime configuration for Next.js 15.
+
+# Test Strategy:
+Verify all dependencies install correctly and the project builds without errors. Ensure TypeScript configuration is properly set up with appropriate types.

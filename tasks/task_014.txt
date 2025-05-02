@@ -1,0 +1,79 @@
+# Task ID: 14
+# Title: Performance Optimization
+# Status: done
+# Dependencies: 12, 13
+# Priority: high
+# Description: Optimize the game for performance and ensure it meets the <1MB size constraint.
+# Details:
+Implement sprite atlas packing to optimize rendering. Add code-splitting to reduce initial load size. Optimize asset sizes through compression and format selection. Implement asset preloading strategy. Conduct performance profiling and optimization, especially for mid-tier Android devices. Ensure total initial download is ≤1 MB.
+
+# Test Strategy:
+Profile performance on various devices, especially mid-tier Android. Measure initial download size and loading times. Verify game runs smoothly at target frame rate across devices.
+
+# Subtasks:
+## 1. Implement Sprite Atlas Packing [done]
+### Dependencies: None
+### Description: Create and implement a sprite atlas system to reduce draw calls and optimize rendering performance.
+### Details:
+1. Research and select an appropriate sprite atlas packing tool (e.g., TexturePacker, LibGDX's TexturePacker).
+2. Organize game sprites into logical groups for atlasing.
+3. Create a sprite atlas generation script that can be run during build.
+4. Implement the loading and usage of sprite atlases in the game engine.
+5. Update rendering code to use sprite references from atlases instead of individual sprites.
+6. Test rendering performance before and after implementation to measure improvements.
+7. Verify visual quality is maintained after atlas implementation.
+
+## 2. Optimize Asset Sizes and Formats [done]
+### Dependencies: None
+### Description: Reduce the size of game assets through compression and optimal format selection.
+### Details:
+1. Audit all game assets (images, audio, fonts, etc.) and document current sizes.
+2. For images: convert to appropriate formats (PNG for transparency, WebP or JPEG for photos), optimize compression settings.
+3. For audio: convert to compressed formats (MP3/OGG), reduce sample rates for non-critical sounds, consider procedural audio where appropriate.
+4. For fonts: use web fonts or subset fonts to include only necessary characters.
+5. Implement a build step that automatically optimizes assets during packaging.
+6. Create a size budget for each asset type and ensure assets stay within budget.
+7. Test game with optimized assets to ensure quality is acceptable.
+8. Document size reduction achieved for each asset type.
+
+## 3. Implement Code-Splitting and Lazy Loading [done]
+### Dependencies: None
+### Description: Reduce initial load size by implementing code-splitting and lazy loading non-essential game components.
+### Details:
+1. Analyze the game codebase to identify components that can be loaded on-demand (e.g., level editors, advanced features, later game levels).
+2. Set up a module bundler (e.g., Webpack, Rollup) with code-splitting configuration.
+3. Refactor the code to use dynamic imports for non-essential components.
+4. Implement a loading manager that handles asynchronous loading of code chunks.
+5. Add loading indicators for when chunks are being loaded.
+6. Create a dependency graph to ensure critical path components are included in the initial bundle.
+7. Test the application flow to ensure code chunks load at appropriate times.
+8. Measure initial bundle size before and after implementation.
+
+## 4. Implement Asset Preloading Strategy [done]
+### Dependencies: 14.1, 14.2
+### Description: Create an intelligent asset preloading system to ensure assets are available when needed without impacting initial load time.
+### Details:
+1. Categorize assets by priority (critical for startup, needed for first level, etc.).
+2. Implement a multi-phase loading strategy: critical assets first, then progressive loading of other assets.
+3. Create a preloading manager that can load assets in the background during gameplay.
+4. Add predictive loading based on player progress (e.g., preload next level assets).
+5. Implement asset unloading for resources no longer needed to manage memory usage.
+6. Add configurable quality settings that affect which assets are loaded (e.g., lower resolution textures for lower-end devices).
+7. Test loading performance on various connection speeds.
+8. Implement caching strategies for previously loaded assets.
+
+## 5. Performance Profiling and Final Optimization [done]
+### Dependencies: 14.1, 14.2, 14.3, 14.4
+### Description: Profile the game performance, identify bottlenecks, and optimize for target devices, ensuring the game meets the 1MB size constraint.
+### Details:
+1. Set up performance monitoring tools (Chrome DevTools, WebPageTest, Lighthouse).
+2. Create a testing protocol for mid-tier Android devices.
+3. Conduct baseline performance measurements (FPS, memory usage, load times).
+4. Profile the game during various gameplay scenarios to identify bottlenecks.
+5. Optimize render loops, update cycles, and physics calculations based on profiling results.
+6. Implement frame skipping or adaptive quality for maintaining performance on lower-end devices.
+7. Measure and optimize the total package size to ensure it's under 1MB.
+8. Create a performance budget document with thresholds for various metrics.
+9. Implement final size optimizations if needed (code minification, tree shaking, etc.).
+10. Document optimization results and performance characteristics across different device tiers.
+

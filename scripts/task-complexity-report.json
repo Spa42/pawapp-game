@@ -1,0 +1,131 @@
+{
+  "meta": {
+    "generatedAt": "2025-05-01T22:46:13.074Z",
+    "tasksAnalyzed": 15,
+    "thresholdScore": 5,
+    "projectName": "Your Project Name",
+    "usedResearch": false
+  },
+  "complexityAnalysis": [
+    {
+      "taskId": 1,
+      "taskTitle": "Project Setup and Configuration",
+      "complexityScore": 4,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the Next.js project setup with TypeScript into specific installation steps, configuration tasks, folder structure creation, and dependency management actions.",
+      "reasoning": "This is a foundational task with clear steps for project initialization. While not technically complex for experienced developers, it requires careful setup of multiple technologies (Next.js, TypeScript, ESLint, Prettier) and establishing the project structure that will impact all future work."
+    },
+    {
+      "taskId": 2,
+      "taskTitle": "Phaser Integration with React",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Detail the specific steps to create a React component that properly initializes and manages a Phaser game instance, including responsive design considerations and scene structure implementation.",
+      "reasoning": "Integrating Phaser with React requires understanding both frameworks and creating a proper bridge between them. The responsive scaling adds complexity, as does setting up the game scene architecture that will be used throughout development."
+    },
+    {
+      "taskId": 3,
+      "taskTitle": "Asset Pipeline Setup",
+      "complexityScore": 5,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the asset pipeline setup into specific tasks for creating placeholder assets, implementing asset loading in Phaser, configuring sprite atlases, and optimizing rendering settings.",
+      "reasoning": "This task involves both asset creation/organization and technical implementation of asset loading. The sprite atlas configuration and rendering optimizations add moderate complexity, requiring specific Phaser knowledge."
+    },
+    {
+      "taskId": 4,
+      "taskTitle": "Core Runner Mechanics",
+      "complexityScore": 7,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Detail the implementation steps for the core endless runner mechanics, including background scrolling, physics setup, player controls, speed progression, and score tracking systems.",
+      "reasoning": "This task forms the gameplay foundation and involves multiple interconnected systems: physics, controls, speed progression, and scoring. Each system requires careful implementation and testing to ensure smooth gameplay."
+    },
+    {
+      "taskId": 5,
+      "taskTitle": "Obstacle System Implementation",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the obstacle system implementation into specific tasks for creating obstacle types, implementing spawn logic, collision detection, game-over conditions, and visual variety through palette-swapping.",
+      "reasoning": "This system requires careful design of multiple obstacle types with appropriate hitboxes, a balanced spawn system, reliable collision detection, and game state management for the game-over condition. The palette-swapping adds additional complexity."
+    },
+    {
+      "taskId": 6,
+      "taskTitle": "Stray Animal Rescue Mechanics",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Detail the implementation steps for the stray animal rescue system, including sprite creation, spawn logic, collision detection, scoring rewards, invincibility implementation, and rescue counting.",
+      "reasoning": "This feature builds on existing systems but adds new gameplay mechanics like invincibility and specialized scoring. It requires careful integration with existing systems while maintaining game balance."
+    },
+    {
+      "taskId": 7,
+      "taskTitle": "Visual Polish - Parallax and Effects",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the visual polish implementation into specific tasks for creating parallax backgrounds, speed-line effects, rescue particle effects, camera shake integration, and performance optimization.",
+      "reasoning": "This task involves multiple visual systems that enhance game feel. Each effect requires specific implementation knowledge (parallax, particles, GSAP integration) and must be optimized for performance, adding moderate complexity."
+    },
+    {
+      "taskId": 8,
+      "taskTitle": "Audio Implementation",
+      "complexityScore": 5,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Detail the steps for implementing the game's audio system, including sound effect creation/integration, background music implementation, audio manager development, and volume control functionality.",
+      "reasoning": "Audio implementation requires creating an organized system for managing multiple sound effects and music. While not the most technically complex, it requires careful implementation to ensure proper loading, playback, and user control."
+    },
+    {
+      "taskId": 9,
+      "taskTitle": "Bilingual UI System",
+      "complexityScore": 8,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Break down the bilingual UI system implementation into specific tasks for creating the localization framework, implementing RTL/LTR switching, designing direction-agnostic UI elements, adding language toggle, and ensuring complete text localization.",
+      "reasoning": "Supporting Arabic (RTL) and English (LTR) requires significant complexity in both the localization system and UI design. Text rendering, layout management, and direction switching all add substantial complexity, especially in a game context."
+    },
+    {
+      "taskId": 10,
+      "taskTitle": "Power-up Implementation",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Detail the implementation steps for the power-up system, including sprite creation, Treat Magnet functionality, Gold Collar protection, spawn logic, and visual indicators for active effects.",
+      "reasoning": "Power-ups add significant gameplay complexity with unique mechanics that interact with existing systems. The Treat Magnet requires spatial awareness logic, while the Gold Collar needs hit protection state management. Visual indicators add UI complexity."
+    },
+    {
+      "taskId": 11,
+      "taskTitle": "End Screen and CTAs",
+      "complexityScore": 5,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the end screen implementation into specific tasks for creating the UI layout, displaying final scores, implementing CTA buttons with proper functionality, and ensuring visual consistency with the game.",
+      "reasoning": "This task involves UI design and implementation with specific functional requirements for the CTA buttons. While not highly complex technically, it requires careful design for user experience and integration with the deep-linking system."
+    },
+    {
+      "taskId": 12,
+      "taskTitle": "Deep-link Service Implementation",
+      "complexityScore": 7,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Detail the implementation steps for the Vercel Edge Function deep-linking service, including app installation detection, URI scheme handling, app store redirection logic, and browser compatibility fallbacks.",
+      "reasoning": "This task involves server-side logic with Vercel Edge Functions and complex client-side detection capabilities. The various conditions and fallbacks for different platforms and browsers add significant complexity."
+    },
+    {
+      "taskId": 13,
+      "taskTitle": "Accessibility Features",
+      "complexityScore": 6,
+      "recommendedSubtasks": 4,
+      "expansionPrompt": "Break down the accessibility features implementation into specific tasks for creating the high-contrast outline shader, implementing the slower-speed mode, developing the accessibility menu, and ensuring settings persistence.",
+      "reasoning": "Implementing accessibility features requires specialized knowledge of shaders for the high-contrast mode and careful integration with game systems for the slower-speed mode. Settings persistence adds state management complexity."
+    },
+    {
+      "taskId": 14,
+      "taskTitle": "Performance Optimization",
+      "complexityScore": 8,
+      "recommendedSubtasks": 6,
+      "expansionPrompt": "Detail the performance optimization steps, including sprite atlas implementation, code-splitting strategies, asset optimization techniques, preloading implementation, performance profiling methods, and size constraint management.",
+      "reasoning": "Performance optimization is highly complex, requiring deep knowledge of web performance, asset optimization, and game-specific optimizations. Meeting the 1MB constraint while maintaining quality requires careful analysis and multiple optimization techniques."
+    },
+    {
+      "taskId": 15,
+      "taskTitle": "Deployment and Final Testing",
+      "complexityScore": 6,
+      "recommendedSubtasks": 5,
+      "expansionPrompt": "Break down the deployment and testing process into specific tasks for Vercel CI/CD setup, analytics configuration, cross-device testing methodology, documentation creation, and requirements verification.",
+      "reasoning": "This final task involves multiple technical aspects of deployment, testing across various devices/browsers, and comprehensive verification of all requirements. The breadth of testing required and final quality assurance adds significant complexity."
+    }
+  ]
+}

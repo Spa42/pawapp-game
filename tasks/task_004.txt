@@ -1,0 +1,11 @@
+# Task ID: 4
+# Title: Core Runner Mechanics
+# Status: done
+# Dependencies: 3
+# Priority: high
+# Description: Implement the basic endless runner mechanics including auto-scrolling and jumping.
+# Details:
+Set up the auto-scrolling background. Implement player character physics with gravity. Add jump mechanics triggered by tap/space. Implement the speed increase mechanic (+10% every 20s, capped at 2×). Create a basic game loop with score tracking based on distance traveled.
+
+# Test Strategy:
+Test jumping mechanics respond correctly to input. Verify auto-scrolling works at the correct speed and accelerates as specified. Ensure score increases appropriately with distance.

@@ -1,0 +1,11 @@
+# Task ID: 10
+# Title: Power-up Implementation
+# Status: done
+# Dependencies: 6
+# Priority: medium
+# Description: Add the optional power-ups: Treat Magnet and Gold Collar.
+# Details:
+Create sprites and effects for both power-ups. Implement Treat Magnet functionality (auto-rescue radius for 5s). Add Gold Collar functionality (one extra hit protection). Create spawn logic for power-ups at appropriate intervals. Add visual indicators for active power-ups and remaining duration.
+
+# Test Strategy:
+Test each power-up functions according to specifications. Verify visual indicators display correctly. Ensure power-up effects expire at the correct time.

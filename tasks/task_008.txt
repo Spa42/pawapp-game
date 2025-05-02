@@ -1,0 +1,11 @@
+# Task ID: 8
+# Title: Audio Implementation
+# Status: done
+# Dependencies: 7
+# Priority: medium
+# Description: Add sound effects and background music to the game.
+# Details:
+Implement lightweight Ogg format SFX for jump, rescue, and obstacle hit actions. Add a looping upbeat background track (≤200 KB). Create audio manager for controlling sound effects and music. Implement volume controls and mute functionality.
+
+# Test Strategy:
+Test all sound effects trigger at appropriate times. Verify background music loops correctly. Ensure audio files meet size constraints and load efficiently.

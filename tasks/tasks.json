@@ -1,0 +1,304 @@
+{
+  "tasks": [
+    {
+      "id": 1,
+      "title": "Project Setup and Configuration",
+      "description": "Bootstrap the Next.js project with TypeScript, ESLint, and Prettier. Set up the basic project structure and install required dependencies.",
+      "status": "done",
+      "dependencies": [],
+      "priority": "high",
+      "details": "Run `pnpm create next-app` with TypeScript, ESLint, and Prettier options. Install Phaser 3.88, GSAP 4, and configure the project structure. Create basic folder structure for components, game assets, and utilities. Set up Edge runtime configuration for Next.js 15.",
+      "testStrategy": "Verify all dependencies install correctly and the project builds without errors. Ensure TypeScript configuration is properly set up with appropriate types."
+    },
+    {
+      "id": 2,
+      "title": "Phaser Integration with React",
+      "description": "Create a React component wrapper for Phaser and set up the game canvas with basic configuration.",
+      "status": "done",
+      "dependencies": [
+        1
+      ],
+      "priority": "high",
+      "details": "Create a `GameCanvas.tsx` component that initializes Phaser 3.88 with Arcade physics. Set up the basic game configuration with appropriate screen dimensions (16:9 ratio). Implement responsive scaling for different device sizes. Create the main game scene structure with preload, create, and update methods.",
+      "testStrategy": "Test the component renders correctly in the browser and Phaser initializes without errors. Verify canvas responsiveness across different screen sizes."
+    },
+    {
+      "id": 3,
+      "title": "Asset Pipeline Setup",
+      "description": "Set up the asset pipeline for game sprites and implement basic asset loading.",
+      "status": "done",
+      "dependencies": [
+        2
+      ],
+      "priority": "high",
+      "details": "Create placeholder assets for the mascot (8-frame run, 2-frame jump, 1 rescue pose), obstacles (park bench, waste-bin, fountain edge), and stray animals. Set up asset loading in Phaser's preload method. Implement sprite atlas configuration with a maximum size of 2048². Configure nearest-neighbor rendering and trim transparent padding as specified.",
+      "testStrategy": "Verify all assets load correctly in the preload phase. Check atlas configuration is properly set up and sprites render correctly."
+    },
+    {
+      "id": 4,
+      "title": "Core Runner Mechanics",
+      "description": "Implement the basic endless runner mechanics including auto-scrolling and jumping.",
+      "status": "done",
+      "dependencies": [
+        3
+      ],
+      "priority": "high",
+      "details": "Set up the auto-scrolling background. Implement player character physics with gravity. Add jump mechanics triggered by tap/space. Implement the speed increase mechanic (+10% every 20s, capped at 2×). Create a basic game loop with score tracking based on distance traveled.",
+      "testStrategy": "Test jumping mechanics respond correctly to input. Verify auto-scrolling works at the correct speed and accelerates as specified. Ensure score increases appropriately with distance."
+    },
+    {
+      "id": 5,
+      "title": "Obstacle System Implementation",
+      "description": "Create the obstacle system with collision detection and game-over condition.",
+      "status": "done",
+      "dependencies": [
+        4
+      ],
+      "priority": "high",
+      "details": "Implement the three obstacle types (park bench, waste-bin, fountain edge) with appropriate hitboxes. Create a spawn system that randomly places obstacles at appropriate intervals. Implement collision detection between player and obstacles. Add game-over condition when player collides with an obstacle. Implement palette-swapping for obstacle variety.",
+      "testStrategy": "Test collision detection accuracy. Verify obstacles spawn at appropriate intervals and with sufficient variety. Ensure game-over triggers correctly on collision."
+    },
+    {
+      "id": 6,
+      "title": "Stray Animal Rescue Mechanics",
+      "description": "Implement the stray dog and cat NPCs with rescue mechanics and scoring.",
+      "status": "done",
+      "dependencies": [
+        5
+      ],
+      "priority": "high",
+      "details": "Create stray dog and cat sprites and animations. Implement spawn logic for strays at appropriate intervals. Add collision detection for rescuing strays. Implement the +50 points award and 2-second invincibility on rescue. Create a counter for total rescues.",
+      "testStrategy": "Test rescue collision detection. Verify point awards and invincibility period work correctly. Ensure stray animals spawn at appropriate intervals and with correct behavior."
+    },
+    {
+      "id": 7,
+      "title": "Visual Polish - Parallax and Effects",
+      "description": "Implement parallax backgrounds and visual effects to enhance the game's appearance.",
+      "status": "done",
+      "dependencies": [
+        6
+      ],
+      "priority": "medium",
+      "details": "Create 3 parallax background layers with different scroll speeds. Implement speed-lines effect that intensifies with game speed. Add rescue particle burst effect using Phaser's particle system. Integrate GSAP for camera shake effect on collisions. Ensure all effects are optimized for performance.",
+      "testStrategy": "Verify parallax layers scroll at correct relative speeds. Test particle effects trigger appropriately. Ensure visual effects don't negatively impact performance."
+    },
+    {
+      "id": 8,
+      "title": "Audio Implementation",
+      "description": "Add sound effects and background music to the game.",
+      "status": "done",
+      "dependencies": [
+        7
+      ],
+      "priority": "medium",
+      "details": "Implement lightweight Ogg format SFX for jump, rescue, and obstacle hit actions. Add a looping upbeat background track (≤200 KB). Create audio manager for controlling sound effects and music. Implement volume controls and mute functionality.",
+      "testStrategy": "Test all sound effects trigger at appropriate times. Verify background music loops correctly. Ensure audio files meet size constraints and load efficiently."
+    },
+    {
+      "id": 9,
+      "title": "Bilingual UI System",
+      "description": "Implement the bilingual UI system with Arabic (default) and English support.",
+      "status": "done",
+      "dependencies": [
+        8
+      ],
+      "priority": "medium",
+      "details": "Create a localization system with translation files for Arabic and English. Implement automatic RTL/LTR switching based on language selection. Design UI elements that work in both text directions. Add language toggle in the game UI. Ensure all game text, including score and instructions, is properly localized.",
+      "testStrategy": "Test UI rendering in both languages. Verify RTL/LTR switching works correctly. Ensure all text elements are properly translated and displayed.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Create Localization Data Structure and Translation Files",
+          "description": "Set up the core localization system with JSON translation files for Arabic and English languages",
+          "dependencies": [],
+          "details": "1. Create a 'localization' folder in the project structure\n2. Create JSON files for Arabic (ar.json) and English (en.json) translations\n3. Define a consistent key structure for all game text (menu items, instructions, gameplay text, etc.)\n4. Populate both files with all required text strings\n5. Create a LocalizationManager class that loads and stores these translations\n6. Implement methods to retrieve translations by key\n7. Test by loading both language files and verifying all keys are present in both languages",
+          "status": "done",
+          "parentTaskId": 9
+        },
+        {
+          "id": 2,
+          "title": "Implement Language Selection and Storage System",
+          "description": "Create a system to select, store, and retrieve the user's language preference",
+          "dependencies": [
+            1
+          ],
+          "details": "1. Add language selection functionality to the LocalizationManager\n2. Implement persistent storage of language preference using localStorage or similar mechanism\n3. Create a default language detection based on browser settings (defaulting to Arabic if not determinable)\n4. Add methods to switch between languages at runtime\n5. Implement an event system to notify UI components when language changes\n6. Create unit tests to verify language selection, storage, and retrieval work correctly\n7. Test language persistence across page reloads",
+          "status": "done",
+          "parentTaskId": 9
+        },
+        {
+          "id": 3,
+          "title": "Implement RTL/LTR Layout Switching",
+          "description": "Create a system to automatically adjust UI layout direction based on selected language",
+          "dependencies": [
+            2
+          ],
+          "details": "1. Extend the LocalizationManager to track and expose text direction (RTL for Arabic, LTR for English)\n2. Create CSS classes for RTL and LTR layouts with appropriate text alignment, padding, and element ordering\n3. Implement a mechanism to apply the correct direction class to the root element when language changes\n4. Add support for bidirectional text rendering using CSS properties like 'direction' and 'unicode-bidi'\n5. Create helper functions to handle special cases (e.g., numbers, which remain LTR even in RTL context)\n6. Test layout switching by changing languages and verifying all elements reposition correctly\n7. Ensure UI elements with icons or directional indicators (arrows, etc.) flip appropriately",
+          "status": "done",
+          "parentTaskId": 9
+        },
+        {
+          "id": 4,
+          "title": "Create Language Toggle UI Component",
+          "description": "Implement a user interface element to switch between Arabic and English",
+          "dependencies": [
+            2,
+            3
+          ],
+          "details": "1. Design a language toggle button/selector that works in both RTL and LTR layouts\n2. Implement the toggle component with appropriate icons or text labels for each language\n3. Connect the toggle to the LocalizationManager's language switching functionality\n4. Add visual feedback to indicate the currently selected language\n5. Position the toggle in an accessible location in the game UI\n6. Ensure the toggle itself is properly localized and changes direction with language\n7. Test the toggle by switching languages multiple times and verifying the entire UI updates correctly",
+          "status": "done",
+          "parentTaskId": 9
+        },
+        {
+          "id": 5,
+          "title": "Integrate Localization System with Game UI Components",
+          "description": "Update all game UI components to use the localization system for text display",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "details": "1. Create a TextLocalizer component/function that can be attached to UI elements\n2. Update all text-containing UI components to use the localization system instead of hardcoded text\n3. Modify UI layouts to accommodate variable text lengths between languages\n4. Ensure dynamic text (scores, timers, etc.) is properly formatted according to language conventions\n5. Implement special handling for mixed-language content if needed\n6. Add language-specific font support if required (especially for Arabic)\n7. Test the complete system by playing through the game in both languages\n8. Verify all text elements, including dynamically generated ones, display correctly in both languages",
+          "status": "done",
+          "parentTaskId": 9
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "title": "Power-up Implementation",
+      "description": "Add the optional power-ups: Treat Magnet and Gold Collar.",
+      "status": "done",
+      "dependencies": [
+        6
+      ],
+      "priority": "medium",
+      "details": "Create sprites and effects for both power-ups. Implement Treat Magnet functionality (auto-rescue radius for 5s). Add Gold Collar functionality (one extra hit protection). Create spawn logic for power-ups at appropriate intervals. Add visual indicators for active power-ups and remaining duration.",
+      "testStrategy": "Test each power-up functions according to specifications. Verify visual indicators display correctly. Ensure power-up effects expire at the correct time."
+    },
+    {
+      "id": 11,
+      "title": "End Screen and CTAs",
+      "description": "Implement the end game screen with Call-To-Action buttons.",
+      "status": "done",
+      "dependencies": [
+        9,
+        10
+      ],
+      "priority": "high",
+      "details": "Create end screen UI with final score and rescue count. Implement 'Join Paw App' button with deep-link functionality. Add 'Play Again' button that resets the Phaser scene. Design visually appealing end screen that maintains the game's aesthetic. Ensure buttons are properly sized for touch interaction.",
+      "testStrategy": "Test both CTA buttons function correctly. Verify game resets properly on 'Play Again'. Ensure end screen displays all relevant game statistics."
+    },
+    {
+      "id": 12,
+      "title": "Deep-link Service Implementation",
+      "description": "Create the Vercel Edge Function for deep-linking to Paw App or app stores.",
+      "status": "done",
+      "dependencies": [
+        11
+      ],
+      "priority": "high",
+      "details": "Implement `link.ts` Edge Function that checks for app installation capability. Use `navigator.canShare` to detect installed apps. Implement logic to direct to `pawapp://home` if app is installed, or redirect to appropriate app store if not. Add fallback for browsers that don't support these features.",
+      "testStrategy": "Test deep-linking on various devices and browsers. Verify app store fallback works correctly. Ensure the function handles edge cases gracefully."
+    },
+    {
+      "id": 13,
+      "title": "Accessibility Features",
+      "description": "Implement accessibility toggles for high-contrast outline and slower-speed mode.",
+      "status": "done",
+      "dependencies": [
+        11
+      ],
+      "priority": "medium",
+      "details": "Create high-contrast outline shader for game elements. Implement slower-speed mode that reduces the game speed by a configurable amount. Add accessibility menu with toggle options. Ensure accessibility settings persist during gameplay and reset appropriately.",
+      "testStrategy": "Test accessibility features with various device settings. Verify high-contrast mode improves visibility. Ensure slower-speed mode functions correctly without breaking game mechanics."
+    },
+    {
+      "id": 14,
+      "title": "Performance Optimization",
+      "description": "Optimize the game for performance and ensure it meets the <1MB size constraint.",
+      "status": "done",
+      "dependencies": [
+        12,
+        13
+      ],
+      "priority": "high",
+      "details": "Implement sprite atlas packing to optimize rendering. Add code-splitting to reduce initial load size. Optimize asset sizes through compression and format selection. Implement asset preloading strategy. Conduct performance profiling and optimization, especially for mid-tier Android devices. Ensure total initial download is ≤1 MB.",
+      "testStrategy": "Profile performance on various devices, especially mid-tier Android. Measure initial download size and loading times. Verify game runs smoothly at target frame rate across devices.",
+      "subtasks": [
+        {
+          "id": 1,
+          "title": "Implement Sprite Atlas Packing",
+          "description": "Create and implement a sprite atlas system to reduce draw calls and optimize rendering performance.",
+          "dependencies": [],
+          "details": "1. Research and select an appropriate sprite atlas packing tool (e.g., TexturePacker, LibGDX's TexturePacker).\n2. Organize game sprites into logical groups for atlasing.\n3. Create a sprite atlas generation script that can be run during build.\n4. Implement the loading and usage of sprite atlases in the game engine.\n5. Update rendering code to use sprite references from atlases instead of individual sprites.\n6. Test rendering performance before and after implementation to measure improvements.\n7. Verify visual quality is maintained after atlas implementation.",
+          "status": "done",
+          "parentTaskId": 14
+        },
+        {
+          "id": 2,
+          "title": "Optimize Asset Sizes and Formats",
+          "description": "Reduce the size of game assets through compression and optimal format selection.",
+          "dependencies": [],
+          "details": "1. Audit all game assets (images, audio, fonts, etc.) and document current sizes.\n2. For images: convert to appropriate formats (PNG for transparency, WebP or JPEG for photos), optimize compression settings.\n3. For audio: convert to compressed formats (MP3/OGG), reduce sample rates for non-critical sounds, consider procedural audio where appropriate.\n4. For fonts: use web fonts or subset fonts to include only necessary characters.\n5. Implement a build step that automatically optimizes assets during packaging.\n6. Create a size budget for each asset type and ensure assets stay within budget.\n7. Test game with optimized assets to ensure quality is acceptable.\n8. Document size reduction achieved for each asset type.",
+          "status": "done",
+          "parentTaskId": 14
+        },
+        {
+          "id": 3,
+          "title": "Implement Code-Splitting and Lazy Loading",
+          "description": "Reduce initial load size by implementing code-splitting and lazy loading non-essential game components.",
+          "dependencies": [],
+          "details": "1. Analyze the game codebase to identify components that can be loaded on-demand (e.g., level editors, advanced features, later game levels).\n2. Set up a module bundler (e.g., Webpack, Rollup) with code-splitting configuration.\n3. Refactor the code to use dynamic imports for non-essential components.\n4. Implement a loading manager that handles asynchronous loading of code chunks.\n5. Add loading indicators for when chunks are being loaded.\n6. Create a dependency graph to ensure critical path components are included in the initial bundle.\n7. Test the application flow to ensure code chunks load at appropriate times.\n8. Measure initial bundle size before and after implementation.",
+          "status": "done",
+          "parentTaskId": 14
+        },
+        {
+          "id": 4,
+          "title": "Implement Asset Preloading Strategy",
+          "description": "Create an intelligent asset preloading system to ensure assets are available when needed without impacting initial load time.",
+          "dependencies": [
+            1,
+            2
+          ],
+          "details": "1. Categorize assets by priority (critical for startup, needed for first level, etc.).\n2. Implement a multi-phase loading strategy: critical assets first, then progressive loading of other assets.\n3. Create a preloading manager that can load assets in the background during gameplay.\n4. Add predictive loading based on player progress (e.g., preload next level assets).\n5. Implement asset unloading for resources no longer needed to manage memory usage.\n6. Add configurable quality settings that affect which assets are loaded (e.g., lower resolution textures for lower-end devices).\n7. Test loading performance on various connection speeds.\n8. Implement caching strategies for previously loaded assets.",
+          "status": "done",
+          "parentTaskId": 14
+        },
+        {
+          "id": 5,
+          "title": "Performance Profiling and Final Optimization",
+          "description": "Profile the game performance, identify bottlenecks, and optimize for target devices, ensuring the game meets the 1MB size constraint.",
+          "dependencies": [
+            1,
+            2,
+            3,
+            4
+          ],
+          "details": "1. Set up performance monitoring tools (Chrome DevTools, WebPageTest, Lighthouse).\n2. Create a testing protocol for mid-tier Android devices.\n3. Conduct baseline performance measurements (FPS, memory usage, load times).\n4. Profile the game during various gameplay scenarios to identify bottlenecks.\n5. Optimize render loops, update cycles, and physics calculations based on profiling results.\n6. Implement frame skipping or adaptive quality for maintaining performance on lower-end devices.\n7. Measure and optimize the total package size to ensure it's under 1MB.\n8. Create a performance budget document with thresholds for various metrics.\n9. Implement final size optimizations if needed (code minification, tree shaking, etc.).\n10. Document optimization results and performance characteristics across different device tiers.",
+          "status": "done",
+          "parentTaskId": 14
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "title": "Deployment and Final Testing",
+      "description": "Set up CI/CD pipeline, deploy to Vercel, and conduct final testing.",
+      "status": "done",
+      "dependencies": [
+        14
+      ],
+      "priority": "high",
+      "details": "Configure Vercel project for auto-deployment from main branch. Set up Vercel Analytics for basic usage tracking. Implement final quality assurance testing across multiple devices and browsers. Create documentation for future maintenance. Verify all requirements from the PRD are met.",
+      "testStrategy": "Conduct end-to-end testing of the complete game flow. Test on multiple device types and browsers. Verify analytics data is being collected correctly. Ensure deployment process works smoothly."
+    }
+  ],
+  "metadata": {
+    "projectName": "Stray-Dog Runner in Al Shaheed Park",
+    "totalTasks": 15,
+    "sourceFile": "/Users/micru/pawapp-game/scripts/PRD.txt",
+    "generatedAt": "2023-10-15"
+  }
+}

@@ -1,0 +1,11 @@
+# Task ID: 6
+# Title: Stray Animal Rescue Mechanics
+# Status: done
+# Dependencies: 5
+# Priority: high
+# Description: Implement the stray dog and cat NPCs with rescue mechanics and scoring.
+# Details:
+Create stray dog and cat sprites and animations. Implement spawn logic for strays at appropriate intervals. Add collision detection for rescuing strays. Implement the +50 points award and 2-second invincibility on rescue. Create a counter for total rescues.
+
+# Test Strategy:
+Test rescue collision detection. Verify point awards and invincibility period work correctly. Ensure stray animals spawn at appropriate intervals and with correct behavior.

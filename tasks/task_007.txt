@@ -1,0 +1,11 @@
+# Task ID: 7
+# Title: Visual Polish - Parallax and Effects
+# Status: done
+# Dependencies: 6
+# Priority: medium
+# Description: Implement parallax backgrounds and visual effects to enhance the game's appearance.
+# Details:
+Create 3 parallax background layers with different scroll speeds. Implement speed-lines effect that intensifies with game speed. Add rescue particle burst effect using Phaser's particle system. Integrate GSAP for camera shake effect on collisions. Ensure all effects are optimized for performance.
+
+# Test Strategy:
+Verify parallax layers scroll at correct relative speeds. Test particle effects trigger appropriately. Ensure visual effects don't negatively impact performance.

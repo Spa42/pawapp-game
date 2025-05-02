@@ -1,0 +1,11 @@
+# Task ID: 12
+# Title: Deep-link Service Implementation
+# Status: done
+# Dependencies: 11
+# Priority: high
+# Description: Create the Vercel Edge Function for deep-linking to Paw App or app stores.
+# Details:
+Implement `link.ts` Edge Function that checks for app installation capability. Use `navigator.canShare` to detect installed apps. Implement logic to direct to `pawapp://home` if app is installed, or redirect to appropriate app store if not. Add fallback for browsers that don't support these features.
+
+# Test Strategy:
+Test deep-linking on various devices and browsers. Verify app store fallback works correctly. Ensure the function handles edge cases gracefully.

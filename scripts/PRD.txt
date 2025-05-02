@@ -1,0 +1,122 @@
+# Overview
+
+“Stray‑Dog Runner in Al Shaheed Park” is a web‑based endless‑runner mini‑game built to funnel users into **Paw App**. Players control Paw App’s lion‑vet mascot as it dashes through a stylised Al Shaheed Park, jumping over obstacles and “rescuing” stray dogs and cats for bonus points. The game lasts 60‑120 s per session, ends with two CTA buttons—**Join Paw App** (deep‑link or App Store fallback) and **Play Again**—and is optimised for lightweight delivery (<1 MB) and Jetpack‑Joyride‑grade polish.
+
+*Problem solved*: provides a playful, brand‑aligned acquisition channel that works in any mobile browser and showcases Paw App’s animal‑care mission.
+*Target users*: casual Kuwaiti mobile users, current Paw App prospects, and anyone forwarded the share link.
+
+# Core Features
+
+* **Endless runner core**
+  • Auto‑scrolls right; single tap/space to jump.
+  • Speed increases +10 % every 20 s, capped at 2×.
+* **Mascot playable character**
+  • Uses existing lion‑vet art (8‑frame run, 2‑frame jump, 1 rescue pose).
+* **Rescue mechanic**
+  • Stray dog & cat NPCs award +50 pts and grant 2 s invincibility on contact.
+* **Obstacles (3)**
+  • Park bench, waste‑bin, fountain edge; single sprite each, palette‑swapped for variety.
+* **Optional power‑ups**
+  • *Treat Magnet* (auto‑rescue radius 5 s).
+  • *Gold Collar* (one extra hit).
+* **Visual polish layer**
+  • Parallax (3 layers), speed‑lines, rescue particle burst, GSAP camera shake.
+* **Audio**
+  • Lightweight Ogg SFX: jump, rescue, obstacle hit; looping upbeat track (≤200 KB).
+* **Bilingual UI**
+  • Arabic (default) & English; RTL/LTR auto‑switch.
+* **Accessibility toggles**
+  • High‑contrast outline & slower‑speed mode.
+* **End screen CTAs**
+  • **Join Paw App** deep‑links via `pawapp://home`; JS fallback to App Store URL.
+  • **Play Again** resets Phaser scene instantly.
+
+# User Experience
+
+## Key Flows
+
+1. **Open link → Tap “Start” → Play → End screen → Join Paw App / Play Again.**
+2. **Repeat play** path retains cached assets for <1 s reload.
+
+## UI/UX Considerations
+
+* Jetpack‑Joyride aesthetic: bright gradients, crisp edges.
+* Single‑finger ergonomics; score top‑left, unobtrusive.
+* Responsive layout: 16∶9 mobile first, scales to desktop.
+* ≤1 MB initial download (atlas + backgrounds + JS).
+
+# Technical Architecture
+
+* **Front‑end**
+  • React 19 + Next.js 15 (Edge runtime, React server components).
+  • Phaser 3.88 (Arcade physics) wrapped in `GameCanvas.tsx`.
+  • GSAP 4 for effects.
+* **Asset pipeline**
+  • Main art (mascot, strays, obstacles) generated in Midjourney, rigged in Spine/DragonBones.
+  • Simple filler assets (trees, plants) fetched via *Game‑Asset‑MCP* or *OpenGameArt‑MCP* servers; post‑processed through *Aseprite‑MCP* to unify palette & export a single 2048² atlas.
+* **Deep‑link service**
+  • Vercel Edge Function `link.ts` checks `navigator.canShare` + installed apps:
+  ‑ if Paw App installed ⇒ `location.href="pawapp://home"`
+  ‑ else ⇒ redirect to iOS / Android store URL.
+* **Hosting & CI**
+  • Vercel project auto‑deploy on `main`; static assets served via Vercel CDN.
+* **Data models**
+  • In‑memory: `score`, `distance`, `rescues`, `powerUpState`.
+  • No persistent storage; analytics via Vercel Analytics.
+
+# Development Roadmap
+
+**Phase 0 — Setup**
+
+* Repo bootstrap (`pnpm create next-app`, TypeScript, ESLint, Prettier).
+* Add Phaser, GSAP, Edge middleware skeleton.
+
+**Phase 1 — MVP Runner**
+
+* Implement auto‑scroll, jump, obstacle collision.
+* Integrate mascot run & jump animation.
+* Static background, score counter, game‑over → replay loop.
+
+**Phase 2 — Rescue & Stray NPCs**
+
+* Spawn logic, hit detection, invincibility window, rescue score.
+
+**Phase 3 — Visual Polish**
+
+* Parallax layers, particle FX, camera shake, audio, Arabic localisation.
+
+**Phase 4 — Power‑ups & CTAs**
+
+* Treat Magnet & Gold Collar behaviour & sprites.
+* End screen with deep‑link logic, install fallback.
+
+**Phase 5 — Optimisation & Accessibility**
+
+* Sprite‑atlas packing, code‑split, high‑contrast mode, performance audit.
+
+# Logical Dependency Chain
+
+1. **Project scaffold & asset pipeline** (foundation).
+2. **Core runner mechanics & collision** (playable loop).
+3. **Rescue system** (adds purpose).
+4. **UI & end‑screen CTAs** (business goal).
+5. **Visual/auditory polish & localisation** (player retention).
+6. **Optional power‑ups & accessibility** (enhancement).
+
+# Risks and Mitigations
+
+| Risk                                 | Impact                        | Mitigation                                                                  |
+| ------------------------------------ | ----------------------------- | --------------------------------------------------------------------------- |
+| Web performance on mid‑tier Android  | Choppy gameplay, users bounce | Cap atlas at 2048², use Arcade physics, profile with Chrome DevTools.       |
+| Asset creation bottleneck            | Delays MVP                    | Limit to core sprites; source filler via MCP libraries; reuse colour swaps. |
+| Deep‑link fails on older browsers    | Lost installs                 | Provide visible App Store badge fallback.                                   |
+| Scope creep (more power‑ups, themes) | Miss launch window            | Freeze features post‑Phase 3; backlog extras.                               |
+
+# Appendix
+
+* **Prompt examples**
+  • “Jetpack Joyride style lion vet running #run8 bright cartoon”.
+  • “Cartoon park bench Al Shaheed evening”.
+* **Deep‑link scheme**: `pawapp://home` (iOS Universal Link & Android App Link configured).
+* **Sprite atlas guidelines**: max 2048², nearest‑neighbour, trim transparent padding.
+* **Key MCP servers**: Game‑Asset‑MCP, OpenGameArt‑MCP, Aseprite‑MCP (build‑time only).

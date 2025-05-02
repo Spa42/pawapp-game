@@ -1,0 +1,74 @@
+# Task ID: 9
+# Title: Bilingual UI System
+# Status: done
+# Dependencies: 8
+# Priority: medium
+# Description: Implement the bilingual UI system with Arabic (default) and English support.
+# Details:
+Create a localization system with translation files for Arabic and English. Implement automatic RTL/LTR switching based on language selection. Design UI elements that work in both text directions. Add language toggle in the game UI. Ensure all game text, including score and instructions, is properly localized.
+
+# Test Strategy:
+Test UI rendering in both languages. Verify RTL/LTR switching works correctly. Ensure all text elements are properly translated and displayed.
+
+# Subtasks:
+## 1. Create Localization Data Structure and Translation Files [done]
+### Dependencies: None
+### Description: Set up the core localization system with JSON translation files for Arabic and English languages
+### Details:
+1. Create a 'localization' folder in the project structure
+2. Create JSON files for Arabic (ar.json) and English (en.json) translations
+3. Define a consistent key structure for all game text (menu items, instructions, gameplay text, etc.)
+4. Populate both files with all required text strings
+5. Create a LocalizationManager class that loads and stores these translations
+6. Implement methods to retrieve translations by key
+7. Test by loading both language files and verifying all keys are present in both languages
+
+## 2. Implement Language Selection and Storage System [done]
+### Dependencies: 9.1
+### Description: Create a system to select, store, and retrieve the user's language preference
+### Details:
+1. Add language selection functionality to the LocalizationManager
+2. Implement persistent storage of language preference using localStorage or similar mechanism
+3. Create a default language detection based on browser settings (defaulting to Arabic if not determinable)
+4. Add methods to switch between languages at runtime
+5. Implement an event system to notify UI components when language changes
+6. Create unit tests to verify language selection, storage, and retrieval work correctly
+7. Test language persistence across page reloads
+
+## 3. Implement RTL/LTR Layout Switching [done]
+### Dependencies: 9.2
+### Description: Create a system to automatically adjust UI layout direction based on selected language
+### Details:
+1. Extend the LocalizationManager to track and expose text direction (RTL for Arabic, LTR for English)
+2. Create CSS classes for RTL and LTR layouts with appropriate text alignment, padding, and element ordering
+3. Implement a mechanism to apply the correct direction class to the root element when language changes
+4. Add support for bidirectional text rendering using CSS properties like 'direction' and 'unicode-bidi'
+5. Create helper functions to handle special cases (e.g., numbers, which remain LTR even in RTL context)
+6. Test layout switching by changing languages and verifying all elements reposition correctly
+7. Ensure UI elements with icons or directional indicators (arrows, etc.) flip appropriately
+
+## 4. Create Language Toggle UI Component [done]
+### Dependencies: 9.2, 9.3
+### Description: Implement a user interface element to switch between Arabic and English
+### Details:
+1. Design a language toggle button/selector that works in both RTL and LTR layouts
+2. Implement the toggle component with appropriate icons or text labels for each language
+3. Connect the toggle to the LocalizationManager's language switching functionality
+4. Add visual feedback to indicate the currently selected language
+5. Position the toggle in an accessible location in the game UI
+6. Ensure the toggle itself is properly localized and changes direction with language
+7. Test the toggle by switching languages multiple times and verifying the entire UI updates correctly
+
+## 5. Integrate Localization System with Game UI Components [done]
+### Dependencies: 9.1, 9.2, 9.3, 9.4
+### Description: Update all game UI components to use the localization system for text display
+### Details:
+1. Create a TextLocalizer component/function that can be attached to UI elements
+2. Update all text-containing UI components to use the localization system instead of hardcoded text
+3. Modify UI layouts to accommodate variable text lengths between languages
+4. Ensure dynamic text (scores, timers, etc.) is properly formatted according to language conventions
+5. Implement special handling for mixed-language content if needed
+6. Add language-specific font support if required (especially for Arabic)
+7. Test the complete system by playing through the game in both languages
+8. Verify all text elements, including dynamically generated ones, display correctly in both languages
+

@@ -1,0 +1,11 @@
+# Task ID: 11
+# Title: End Screen and CTAs
+# Status: done
+# Dependencies: 9, 10
+# Priority: high
+# Description: Implement the end game screen with Call-To-Action buttons.
+# Details:
+Create end screen UI with final score and rescue count. Implement 'Join Paw App' button with deep-link functionality. Add 'Play Again' button that resets the Phaser scene. Design visually appealing end screen that maintains the game's aesthetic. Ensure buttons are properly sized for touch interaction.
+
+# Test Strategy:
+Test both CTA buttons function correctly. Verify game resets properly on 'Play Again'. Ensure end screen displays all relevant game statistics.
