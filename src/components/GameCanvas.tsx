@@ -62,14 +62,9 @@ class PreloaderScene extends Phaser.Scene {
         // --- Load Assets Here --- 
         console.log('PreloaderScene preload');
         this.load.atlas('game_atlas', 'assets/game_atlas.png', 'assets/game_atlas.json');
-        this.load.image('bg_layer1', 'assets/bg_layer1_placeholder.webp'); 
-        this.load.image('bg_layer2', 'assets/bg_layer2_placeholder.webp'); 
-        this.load.image('bg_layer3', 'assets/bg_layer3_placeholder.webp'); 
-        this.load.image('ground', 'assets/ground_placeholder.webp');
-        this.load.audio('sfx_jump', 'assets/sfx_jump_placeholder.ogg');
-        this.load.audio('sfx_rescue', 'assets/sfx_rescue_placeholder.ogg');
-        this.load.audio('sfx_hit', 'assets/sfx_hit_placeholder.ogg');
-        this.load.audio('music_bg', 'assets/music_bg_placeholder.ogg');
+        this.load.image('bg_layer1', 'assets/bg_layer1.png'); 
+        this.load.image('bg_layer2', 'assets/bg_layer2.png'); 
+        this.load.image('ground_layer', 'assets/ground_layer.png');
     }
 }
 
@@ -78,7 +73,6 @@ class MainScene extends Phaser.Scene {
     private player?: Phaser.Physics.Arcade.Sprite;
     private bgLayer1?: Phaser.GameObjects.TileSprite;
     private bgLayer2?: Phaser.GameObjects.TileSprite;
-    private bgLayer3?: Phaser.GameObjects.TileSprite;
     private scoreText?: Phaser.GameObjects.Text;
     private rescuesText?: Phaser.GameObjects.Text; // For rescue count
     private score: number = 0;
@@ -98,19 +92,19 @@ class MainScene extends Phaser.Scene {
     private straySpawnTimer?: Phaser.Time.TimerEvent;
     private powerupSpawnTimer?: Phaser.Time.TimerEvent;
 
-    private jumpVelocity: number = -350; // Adjust as needed
+    private jumpVelocity: number = -700; // Was -500 
     private maxSpeedMultiplier: number = 2;
     private speedIncreaseInterval: number = 20000; // 20 seconds in ms
     private speedIncreaseFactor: number = 1.1; // 10%
     private obstacleInitialSpawnDelay: number = 2000; // ms
     private obstacleSpawnIntervalBase: number = 2500; // ms, will decrease with speed
     private obstacleVelocityXBase: number = -200; // pixels/sec, will increase with speed
-    private obstacleTypes: string[] = ['obstacle_bench', 'obstacle_bin', 'obstacle_fountain']; // Add keys as needed
-    private strayTypes: string[] = ['stray_dog', 'stray_cat']; // Placeholder keys
+    private obstacleTypes: string[] = ['obstacle_bench', 'obstacle_bush', 'obstacle_fountain']; // Updated obstacle types based on new assets
+    private strayTypes: string[] = ['stray_dog_0', 'stray_cat_0']; // Was placeholder keys
     private straySpawnIntervalBase: number = 5000; // ms, average interval
     private rescuePoints: number = 50;
     private invincibilityDuration: number = 2000; // 2 seconds in ms
-    private powerupTypes: string[] = ['powerup_gold_collar']; // Add 'powerup_treat_magnet' later
+    private powerupTypes: string[] = ['powerup_red_pot']; // Was 'powerup_gold_collar'
     private powerupSpawnIntervalBase: number = 15000; // ms, average interval
 
     constructor() {
@@ -129,15 +123,30 @@ class MainScene extends Phaser.Scene {
         this.hasGoldCollar = false;
         this.isSlowMode = false; // Initialize slow mode
 
-        // --- Parallax Background --- 
+        // --- Parallax Background using TileSprites ---
         const { width, height } = this.scale;
-        this.bgLayer1 = this.add.tileSprite(0, 0, width, height, 'bg_layer1').setOrigin(0, 0).setScrollFactor(0);
-        this.bgLayer2 = this.add.tileSprite(0, 0, width, height, 'bg_layer2').setOrigin(0, 0).setScrollFactor(0);
-        this.bgLayer3 = this.add.tileSprite(0, 0, width, height, 'bg_layer3').setOrigin(0, 0).setScrollFactor(0);
 
-        // --- Ground --- 
-        const ground = this.physics.add.staticImage(width / 2, height - 10, 'ground');
-        ground.setSize(width, 20).setDisplaySize(width, 20);
+        this.bgLayer1 = this.add.tileSprite(0, 0, width, height, 'bg_layer1')
+            .setOrigin(0, 0)
+            .setScrollFactor(0); // Stays fixed relative to camera
+        this.bgLayer2 = this.add.tileSprite(0, 0, width, height, 'bg_layer2')
+            .setOrigin(0, 0)
+            .setScrollFactor(0);
+
+        // Scale the tile sprites' textures to fit the height
+        const bg1Texture = this.textures.get('bg_layer1').getSourceImage();
+        const bg2Texture = this.textures.get('bg_layer2').getSourceImage();
+        if (bg1Texture) {
+            this.bgLayer1.setTileScale(height / bg1Texture.height);
+        }
+        if (bg2Texture) {
+            this.bgLayer2.setTileScale(height / bg2Texture.height);
+        }
+
+        // --- Ground ---
+        // Use scaleY to potentially adjust ground size if needed, or keep fixed size
+        const ground = this.physics.add.staticImage(width / 2, height - 10, 'ground_layer');
+        ground.setSize(width, 20 * (height / this.bgLayer1.height)).setDisplaySize(width, 20 * (height / this.bgLayer1.height)); // Adjust ground height slightly based on bg scale
         ground.refreshBody();
         ground.setDepth(1); // Ensure ground is above furthest background layer
 
@@ -149,6 +158,17 @@ class MainScene extends Phaser.Scene {
         this.player.setCollideWorldBounds(false);
         this.player.setDepth(2); // Ensure player is above background and ground
         this.physics.add.collider(this.player, ground);
+
+        // --- Player Animations ---
+        this.anims.create({
+            key: 'run',
+            frames: this.anims.generateFrameNames('game_atlas', { prefix: 'mascot_run_', start: 0, end: 7 }),
+            frameRate: 12, // Adjust frame rate as needed
+            repeat: -1 // Loop indefinitely
+        });
+
+        // Play the run animation
+        this.player.play('run', true);
 
         // --- Obstacles --- 
         this.obstacles = this.physics.add.group();
@@ -184,7 +204,7 @@ class MainScene extends Phaser.Scene {
         
         // --- Background Music ---
         // Start background music (looping)
-        this.sound.play('music_bg', { loop: true, volume: 0.5 }); // Adjust volume
+        // this.sound.play('music_bg', { loop: true, volume: 0.5 }); // Disabled audio // Adjust volume
 
         // --- Timers --- 
         this.gameSpeed = 1;
@@ -289,7 +309,7 @@ class MainScene extends Phaser.Scene {
 
     spawnPowerup() {
         if (this.isGameOver) return;
-        const powerupKey = 'powerup_gold_collar';
+        const powerupKey = this.powerupTypes[0]; // Assuming only one type for now
         const spawnX = this.scale.width + Phaser.Math.Between(100, 200);
         const spawnY = this.scale.height - Phaser.Math.Between(50, 200);
         
@@ -328,7 +348,7 @@ class MainScene extends Phaser.Scene {
             return;
         }
 
-        this.sound.play('sfx_hit');
+        // this.sound.play('sfx_hit'); // Disabled audio
         this.gameOver();
     }
 
@@ -348,7 +368,7 @@ class MainScene extends Phaser.Scene {
         // Update rescues text using localized format
         this.rescuesText?.setText(this.getLocalizedRescuesText());
 
-        this.sound.play('sfx_rescue'); // Play rescue sound
+        // this.sound.play('sfx_rescue'); // Disabled audio // Play rescue sound
 
         // Deactivate instead of destroy
         this.strays?.killAndHide(strayGO as Phaser.GameObjects.GameObject);
@@ -364,14 +384,14 @@ class MainScene extends Phaser.Scene {
         if (this.isGameOver || !powerupGO.active) return;
         
         const powerupSprite = powerupGO as Phaser.Physics.Arcade.Sprite;
-        const powerupKey = powerupSprite.texture.key;
+        const powerupKey = powerupSprite.frame.name; // Get frame name from the sprite
 
         // Deactivate instead of destroy
         this.powerups?.killAndHide(powerupSprite);
 
-        // Activate specific powerup effect
-        if (powerupKey === 'powerup_gold_collar') {
-            this.activateGoldCollar();
+        // Activate specific powerup effect based on the collected frame name
+        if (powerupKey === 'powerup_red_pot') { // Check for the red pot frame
+            this.activateGoldCollar(); // Still activates Gold Collar effect
         } else if (powerupKey === 'powerup_treat_magnet') {
             // TODO: Implement Treat Magnet activation
             console.log('Collected Treat Magnet (Not Implemented)');
@@ -437,7 +457,7 @@ class MainScene extends Phaser.Scene {
         this.invincibilityTimer?.remove();
         this.hasGoldCollar = false; 
         // Player tint is cleared below or remains red
-        this.sound.stopByKey('music_bg');
+        // this.sound.stopByKey('music_bg'); // Disabled audio
 
         const finalScore = Math.floor(this.score);
         const finalRescues = this.rescues;
@@ -448,6 +468,8 @@ class MainScene extends Phaser.Scene {
         const centerY = this.scale.height / 2;
         const buttonStyle = { fontSize: '32px', color: '#ffffff', backgroundColor: '#555555', padding: { x: 20, y: 10 } };
         const scoreStyle = { fontSize: '28px', color: '#ffffff' };
+        // Define a specific style for the Join button
+        const joinButtonStyle = { fontSize: '36px', color: '#ffffff', backgroundColor: '#007bff', padding: { x: 25, y: 15 } }; // Larger and blue
 
         // Semi-transparent background overlay (optional)
         this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x000000, 0.7).setDepth(10);
@@ -482,24 +504,30 @@ class MainScene extends Phaser.Scene {
         });
 
         // Join Paw App Button
-        const joinButton = this.add.text(centerX, centerY + 120, localizationManager.getTranslation('joinPawApp'), buttonStyle)
+        const joinButton = this.add.text(centerX, centerY + 120, localizationManager.getTranslation('joinPawApp'), joinButtonStyle) // Use new style
             .setOrigin(0.5)
             .setDepth(11)
             .setInteractive({ useHandCursor: true });
 
         joinButton.on('pointerdown', () => {
-            console.log('Join Paw App button clicked! Triggering deep link...');
+            console.log('Redirecting to App Store...');
             this.triggerDeepLinkFlow();
         });
     }
 
     triggerDeepLinkFlow() {
-        // URLs (hardcoded for now, ideally fetched from /api/join)
-        const deepLink = 'pawapp://home';
-        const iosStoreUrl = 'https://apps.apple.com/app/example-app/id123456789'; // TODO: Replace
-        const androidStoreUrl = 'https://play.google.com/store/apps/details?id=com.example.app'; // TODO: Replace
-        const fallbackTimeout = 1500; // ms before redirecting to store
+        // URLs
+        const iosStoreUrl = 'https://apps.apple.com/lv/app/paw-app/id6474899820?platform=iphone'; // Use provided link
+        // const deepLink = 'pawapp://home'; // Old deeplink (removed)
+        // const androidStoreUrl = 'https://play.google.com/store/apps/details?id=com.example.app'; // TODO: Replace if needed
+        // const fallbackTimeout = 1500; // Timeout removed
 
+        // Directly open the App Store link
+        console.log('Redirecting to App Store...');
+        window.location.href = iosStoreUrl;
+
+        // Remove old deeplink and fallback logic
+        /*
         window.location.href = deepLink;
 
         const fallbackTimer = setTimeout(() => {
@@ -516,9 +544,6 @@ class MainScene extends Phaser.Scene {
             }
         }, fallbackTimeout);
 
-        // If the deep link works, the browser navigates away,
-        // and the timeout function might not execute or its effect won't be seen.
-        // We can try to clear the timeout if the page loses focus, but it's not perfectly reliable.
         const clearFallback = () => {
             clearTimeout(fallbackTimer);
             window.removeEventListener('blur', clearFallback);
@@ -527,12 +552,13 @@ class MainScene extends Phaser.Scene {
         };
         window.addEventListener('blur', clearFallback);
         window.addEventListener('pagehide', clearFallback); // For mobile
+        */
     }
 
     jump() {
         if (this.isGameOver) return;
         if (this.player && this.player.body?.touching.down) {
-            this.sound.play('sfx_jump'); // Play jump sound
+            // this.sound.play('sfx_jump'); // Disabled audio // Play jump sound
             this.player.setVelocityY(this.jumpVelocity);
         }
     }
@@ -551,11 +577,16 @@ class MainScene extends Phaser.Scene {
         if (this.isGameOver) return;
         const effectiveSpeed = this.getCurrentGameSpeedMultiplier();
 
-        // --- Parallax Background Scrolling ---
-        if (this.bgLayer1 && this.bgLayer2 && this.bgLayer3) {
-            this.bgLayer1.tilePositionX += 0.5 * effectiveSpeed;
-            this.bgLayer2.tilePositionX += 1 * effectiveSpeed;
-            this.bgLayer3.tilePositionX += 1.5 * effectiveSpeed;
+        // --- Parallax Background Scrolling using TileSprites ---
+        const scrollSpeedLayer1 = 0.25 * effectiveSpeed; // Adjust speed factor as needed
+        const scrollSpeedLayer2 = 0.5 * effectiveSpeed; // Adjust speed factor as needed
+
+        // Update tilePositionX for seamless scrolling
+        if (this.bgLayer1) {
+            this.bgLayer1.tilePositionX += scrollSpeedLayer1;
+        }
+        if (this.bgLayer2) {
+            this.bgLayer2.tilePositionX += scrollSpeedLayer2;
         }
 
         // --- Score Update ---
@@ -641,8 +672,10 @@ const config: Phaser.Types.Core.GameConfig = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { x: 0, y: 500 },
-            debug: process.env.NODE_ENV === 'development',
+            gravity: { x: 0, y: 750 }, // Was 750
+            // Disable debug rendering
+            debug: false, 
+            // debug: process.env.NODE_ENV === 'development', 
         },
     },
     // Start with PreloaderScene, then MainScene
