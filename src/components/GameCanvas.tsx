@@ -106,11 +106,11 @@ class MainScene extends Phaser.Scene {
     private obstacleVelocityXBase: number = -200; // pixels/sec, will increase with speed
     private obstacleTypes: string[] = ['obstacle_bench', 'obstacle_bush', 'obstacle_fountain']; // Restore definition
     private strayTypes: string[] = ['stray_dog_0', 'stray_cat_0'];
-    private straySpawnIntervalBase: number = 5000; // ms, average interval
+    private straySpawnIntervalBase: number = 7000; // ms, average interval
     private rescuePoints: number = 50;
     private invincibilityDuration: number = 2000; // 2 seconds in ms
     private powerupTypes: string[] = ['powerup_red_pot', 'powerup_feather']; // Keep feather powerup
-    private powerupSpawnIntervalBase: number = 15000; // ms, average interval
+    private powerupSpawnIntervalBase: number = 12000; // ms, average interval
 
     // Double Jump State
     private canDoubleJump: boolean = false;
@@ -328,8 +328,8 @@ class MainScene extends Phaser.Scene {
         const powerupKey = this.powerupTypes[powerupTypeIndex]; // This determines the EFFECT
         // Spawn relative to BASE_WIDTH and a random height
         const spawnX = BASE_WIDTH + Phaser.Math.Between(100, 200);
-        // Adjust spawn Y range to be higher, sometimes requiring full jump
-        const spawnY = Phaser.Math.Between(150, 350); // Was BASE_HEIGHT - Phaser.Math.Between(50, 200)
+        // Adjust spawn Y range for more variety (high and low)
+        const spawnY = Phaser.Math.Between(150, BASE_HEIGHT - 70); // Was 150-350
         
         // Get a sprite from the group
         const powerup = this.powerups?.get(spawnX, spawnY) as Phaser.Physics.Arcade.Sprite;
