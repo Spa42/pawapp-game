@@ -8,7 +8,7 @@ const IOS_STORE_URL = 'https://apps.apple.com/app/example-app/id123456789'; // T
 const ANDROID_STORE_URL = 'https://play.google.com/store/apps/details?id=com.example.app'; // TODO: Replace
 const DEEP_LINK_URL = 'pawapp://home';
 
-export async function GET(request: Request) {
+export async function GET(_request: Request) {
   // Could add logic here based on request headers (e.g., User-Agent)
   // but keeping simple for now. Client-side will handle UA detection.
 

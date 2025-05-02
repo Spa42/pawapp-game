@@ -1,0 +1,123 @@
+# Stray-Dog Runner Devlog
+
+## Project Goal & Overview
+
+*   **Name:** Stray-Dog Runner in Al Shaheed Park
+*   **Purpose:** Web-based endless runner mini-game designed as a fun acquisition channel for the "Paw App".
+*   **Gameplay:** Players control Paw App's lion-vet mascot, running through a stylized Al Shaheed Park, jumping obstacles, and rescuing stray animals for points.
+*   **Target Audience:** Casual mobile users in Kuwait, Paw App prospects.
+*   **Platform:** Web (Mobile-first, responsive), built with React/Next.js and Phaser.
+*   **Key Reference:** `scripts/PRD.txt` contains the original product requirements document.
+
+## Technology Stack
+
+*   **Frontend Framework:** React 19 + Next.js 15 (using App Router)
+*   **Game Engine:** Phaser 3.88 (Arcade Physics)
+*   **Language:** TypeScript
+*   **Styling:** Tailwind CSS
+*   **Animation/Effects:** GSAP (Planned, basic physics integrated)
+*   **Build Tool:** `pnpm`
+*   **Hosting:** Vercel (CI/CD on `main` branch)
+*   **Task Management:** Task Master AI (tasks stored in `tasks/`)
+
+## Core Gameplay Mechanics & Features (Implemented)
+
+*   **Endless Runner:** Auto-scrolling right-to-left perspective. Player automatically runs.
+*   **Player Control:** Single tap/spacebar to jump.
+*   **Physics:** Phaser Arcade Physics handles gravity, collisions, and overlaps.
+*   **Game Speed:** Starts at 1x, increases by 10% every 20 seconds (up to 2x max).
+*   **Obstacles:**
+    *   Spawned periodically from the right side (`obstacleSpawnTimer`, `spawnObstacle` in `MainScene`).
+    *   Types: 'obstacle_bench', 'obstacle_bin', 'obstacle_fountain' (using frames from `game_atlas`).
+    *   Collision with the player ends the game (`handlePlayerObstacleCollision`), unless the Gold Collar power-up is active.
+    *   Pooled using `Phaser.Physics.Arcade.Group`.
+*   **Rescue Mechanic:**
+    *   Stray animals (dogs/cats, using frames from `game_atlas`) spawn periodically (`straySpawnTimer`, `spawnStray`).
+    *   Overlapping with the player triggers a "rescue" (`handlePlayerStrayOverlap`).
+    *   Rescue awards +50 points and grants 2 seconds of invincibility (visualized by player alpha change).
+    *   Rescue count is tracked and displayed.
+    *   Pooled using `Phaser.Physics.Arcade.Group`.
+*   **Scoring:** Score increases based on time/distance survived (scaled by `gameSpeed`). Rescues add bonus points. Displayed top-left.
+*   **Power-ups:**
+    *   *Gold Collar*: Implemented. Spawns periodically (`powerupSpawnTimer`, `spawnPowerup`), collected on overlap (`handlePlayerPowerupOverlap`). Grants one extra hit (consumes the collar instead of game over). Visualized by player tint. Pooled using `Phaser.Physics.Arcade.Group`.
+    *   *Treat Magnet*: Defined in PRD, placeholder in code, not yet implemented.
+*   **Game Over:**
+    *   Triggered by obstacle collision (without Gold Collar).
+    *   Pauses physics, stops timers, displays final score and rescues.
+    *   Presents "Play Again" and "Join Paw App" buttons.
+*   **Visuals:**
+    *   Parallax Background: 3 layers (`bg_layer1`, `bg_layer2`, `bg_layer3` - `TileSprite`s) scrolling at different speeds.
+    *   Placeholder assets loaded via `PreloaderScene` using `.webp` for backgrounds/ground and a sprite atlas (`game_atlas.png`/`.json`).
+*   **Audio:**
+    *   Placeholder `.ogg` sound effects for jump, rescue, hit loaded (`PreloaderScene`).
+    *   Placeholder looping background music loaded and played (`MainScene`).
+    *   Sounds triggered by corresponding game events.
+*   **Localization:**
+    *   Supports English ('en') and Arabic ('ar', default).
+    *   Translations stored in `public/locales/en.json` and `public/locales/ar.json`.
+    *   `src/utils/LocalizationManager.ts` handles loading translations, language detection (localStorage > browser > default 'ar'), storing preference in `localStorage`, providing text via `getTranslation`/`getFormattedTranslation`, and managing language change events.
+    *   `src/app/layout.tsx` is a client component listening for language changes and dynamically setting `lang` and `dir` attributes on the `<html>` tag for LTR/RTL text direction.
+    *   `src/components/LanguageToggle.tsx` allows user switching.
+    *   UI text in `MainScene` (Score, Rescues, Game Over screen) uses `LocalizationManager`.
+*   **Deep Linking / CTAs:**
+    *   "Join Paw App" button on the game over screen.
+    *   Clicking triggers `triggerDeepLinkFlow` in `GameCanvas.tsx`.
+    *   Attempts to open `pawapp://home`.
+    *   Uses a timeout fallback mechanism: If the app doesn't open within ~1.5s, it redirects to the App Store / Play Store based on basic User-Agent detection.
+    *   Placeholder store URLs are currently hardcoded in `GameCanvas.tsx`.
+    *   An API route `src/app/api/join/route.ts` (Edge runtime) exists to provide these URLs (deep link, iOS, Android) but is not yet integrated into the client-side flow.
+*   **Accessibility:**
+    *   *Slower Speed Mode*: Implemented. Toggled via the 'S' key. Reduces game speed, object velocities, spawn rates, and score accumulation rate (`slowModeMultiplier`). Affects `getCurrentGameSpeedMultiplier`.
+    *   *High-Contrast Mode*: Defined in PRD, not yet implemented.
+*   **Performance Optimization:**
+    *   *Code Splitting*: `GameCanvas` component is dynamically imported in `src/components/GameLoader.tsx` (`next/dynamic` with `ssr: false`) to reduce initial bundle size. `GameLoader` is used in `src/app/page.tsx`.
+    *   *Asset Preloading*: A dedicated `PreloaderScene` loads all necessary game assets before `MainScene` starts, displaying a progress bar.
+    *   *Object Pooling*: Obstacles, strays, and power-ups are reused via Phaser Groups (`get`, `killAndHide`) to minimize object creation/destruction during gameplay.
+    *   *Asset Format*: Using `.webp` for static images where appropriate. Using a sprite atlas (`game_atlas`) for animations/smaller sprites.
+
+## Code Structure Highlights
+
+*   **`src/app/page.tsx`**: Entry point, renders `GameLoader`.
+*   **`src/app/layout.tsx`**: Root layout, handles global styles and language/direction attributes.
+*   **`src/components/GameLoader.tsx`**: Client component dynamically importing `GameCanvas`.
+*   **`src/components/GameCanvas.tsx`**: React component hosting the Phaser game. Initializes Phaser, contains `PreloaderScene` and `MainScene`.
+    *   **`PreloaderScene`**: Phaser Scene for loading assets.
+    *   **`MainScene`**: Phaser Scene containing the main game logic, physics, sprites, timers, UI text rendering, event handling, and game state.
+*   **`src/components/LanguageToggle.tsx`**: Simple UI button to switch languages.
+*   **`src/utils/LocalizationManager.ts`**: Class managing language state and translations.
+*   **`src/app/api/join/route.ts`**: Edge API route providing deep link/store URLs.
+*   **`public/assets/`**: Location for game assets (images, audio, atlas).
+*   **`public/locales/`**: Location for JSON translation files.
+*   **`tasks/`**: Directory for Task Master generated task files.
+*   **`scripts/PRD.txt`**: Product Requirements Document.
+
+## Development Process & Status
+
+*   Project initialized using `pnpm create next-app`.
+*   Tasks 1-15 from the initial plan generated by Task Master based on `PRD.txt` have been implemented.
+*   Code is version-controlled in a Git repository (`https://github.com/Spa42/pawapp-game`).
+*   Resolved several build issues related to dynamic imports, Phaser types, and ESLint rules during development.
+*   Next steps likely involve integrating real assets, implementing remaining features (Treat Magnet, High Contrast), refining gameplay/polish, adding analytics, testing, and deployment configuration.
+
+## Key Connections & Data Flow
+
+1.  **React -> Phaser:** `GameCanvas.tsx` initializes and manages the Phaser Game instance (`new Phaser.Game`).
+2.  **Phaser Scenes:** `PreloaderScene` runs first to load assets, then starts `MainScene`.
+3.  **Game Logic:** Resides primarily within `MainScene` (update loop, collision handlers, timers, state variables like `score`, `isGameOver`).
+4.  **UI (In-Game):** Phaser Text objects (`scoreText`, `rescuesText`, Game Over screen text) are created and updated within `MainScene`.
+5.  **Localization:**
+    *   `LocalizationManager` reads `.json` files.
+    *   `layout.tsx` reads initial language/direction from `LocalizationManager` and updates `<html>` attributes.
+    *   `MainScene` calls `LocalizationManager.getFormattedTranslation` to display localized UI text.
+    *   `LanguageToggle` calls `LocalizationManager.setLanguage`, triggering an event.
+    *   `layout.tsx` listens for the event to update the `dir` attribute.
+6.  **Deep Linking:**
+    *   "Join" button click in `MainScene` calls `triggerDeepLinkFlow`.
+    *   `triggerDeepLinkFlow` attempts `window.location.href = deepLink` and sets a fallback timer.
+    *   Fallback redirects to store URLs (currently hardcoded, intended to use `/api/join`).
+7.  **Performance:**
+    *   `GameLoader` -> Dynamic `GameCanvas` import (Code Splitting).
+    *   `PreloaderScene` loads assets before `MainScene` (Preloading).
+    *   `MainScene` uses Phaser Groups `.get()`/`.killAndHide()` (Pooling).
+
+This devlog provides a snapshot of the project as of the last update. Refer to Git history and `scripts/PRD.txt` for more details. 

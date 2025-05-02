@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useRef } from 'react';
-import Phaser from 'phaser';
+import * as Phaser from 'phaser';
 import localizationManager from '@/utils/LocalizationManager'; // Import the manager
 
 // --- Preloader Scene --- 
@@ -317,17 +317,15 @@ class MainScene extends Phaser.Scene {
     }
 
     handlePlayerObstacleCollision(
-        playerGO: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.GameObjects.GameObject,
-        obstacleGO: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.GameObjects.GameObject
+        _playerGO: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.GameObjects.GameObject,
+        _obstacleGO: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.GameObjects.GameObject
     ) {
         if (this.isGameOver || this.isInvincible) return;
 
         // Check for Gold Collar effect
         if (this.hasGoldCollar) {
             this.consumeGoldCollar();
-            // Optional: Destroy the specific obstacle hit?
-            // (obstacleGO as Phaser.GameObjects.GameObject).destroy(); 
-            return; // Avoid game over
+            return;
         }
 
         this.sound.play('sfx_hit');
@@ -502,23 +500,19 @@ class MainScene extends Phaser.Scene {
         const androidStoreUrl = 'https://play.google.com/store/apps/details?id=com.example.app'; // TODO: Replace
         const fallbackTimeout = 1500; // ms before redirecting to store
 
-        // Try the deep link
         window.location.href = deepLink;
 
-        // Fallback logic using timeout
         const fallbackTimer = setTimeout(() => {
-            // Simple User Agent detection (can be refined)
-            const ua = navigator.userAgent || navigator.vendor || (window as any).opera;
+            // Simplify UA check, avoid non-standard properties
+            const ua = navigator.userAgent;
             if (/android/i.test(ua)) {
                 console.log('Deep link failed (timeout), redirecting to Play Store...');
                 window.location.href = androidStoreUrl;
-            } else if (/iPad|iPhone|iPod/.test(ua) && !(window as any).MSStream) {
+            } else if (/iPad|iPhone|iPod/.test(ua)) { // Removed MSStream check
                 console.log('Deep link failed (timeout), redirecting to App Store...');
                 window.location.href = iosStoreUrl;
             } else {
-                // Fallback for desktop or unknown - could go to a web page
                 console.log('Deep link failed (timeout), fallback to generic store/web page...');
-                // window.location.href = genericFallbackUrl;
             }
         }, fallbackTimeout);
 
@@ -660,7 +654,8 @@ const config: Phaser.Types.Core.GameConfig = {
     backgroundColor: '#2d2d2d',
 };
 
-interface GameCanvasProps {}
+// Use type alias for empty props object
+type GameCanvasProps = {};
 
 const GameCanvas: React.FC<GameCanvasProps> = () => {
     const gameInstance = useRef<Phaser.Game | null>(null);

@@ -1,6 +1,6 @@
 'use client'; // Required for hooks and event listeners
 
-import type { Metadata } from "next";
+// import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import React, { useState, useEffect } from 'react';
