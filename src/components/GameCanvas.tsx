@@ -317,8 +317,8 @@ class MainScene extends Phaser.Scene {
     }
 
     handlePlayerObstacleCollision(
-        _playerGO: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.GameObjects.GameObject,
-        _obstacleGO: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.GameObjects.GameObject
+        // _playerGO: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.GameObjects.GameObject,
+        // _obstacleGO: Phaser.Types.Physics.Arcade.GameObjectWithBody | Phaser.GameObjects.GameObject
     ) {
         if (this.isGameOver || this.isInvincible) return;
 
@@ -655,9 +655,9 @@ const config: Phaser.Types.Core.GameConfig = {
 };
 
 // Use type alias for empty props object
-type GameCanvasProps = {};
+// type GameCanvasProps = {};
 
-const GameCanvas: React.FC<GameCanvasProps> = () => {
+const GameCanvas: React.FC = () => {
     const gameInstance = useRef<Phaser.Game | null>(null);
     const gameContainerRef = useRef<HTMLDivElement>(null);
 
