@@ -146,7 +146,8 @@ class MainScene extends Phaser.Scene {
         // --- Ground ---
         // Use scaleY to potentially adjust ground size if needed, or keep fixed size
         const ground = this.physics.add.staticImage(width / 2, height - 10, 'ground_layer');
-        ground.setSize(width, 20 * (height / this.bgLayer1.height)).setDisplaySize(width, 20 * (height / this.bgLayer1.height)); // Adjust ground height slightly based on bg scale
+        // Increase ground display height from 20 to 60 to show more of the texture
+        ground.setSize(width, 60 * (height / this.bgLayer1.height)).setDisplaySize(width, 60 * (height / this.bgLayer1.height)); // Adjust ground height to show more texture
         ground.refreshBody();
         ground.setDepth(1); // Ensure ground is above furthest background layer
 
@@ -672,7 +673,7 @@ const config: Phaser.Types.Core.GameConfig = {
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { x: 0, y: 750 }, // Was 750
+            gravity: { x: 0, y: 770 }, // Was 750
             // Disable debug rendering
             debug: false, 
             // debug: process.env.NODE_ENV === 'development', 
