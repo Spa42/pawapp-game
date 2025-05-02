@@ -4,6 +4,10 @@ import React, { useEffect, useRef } from 'react';
 import * as Phaser from 'phaser';
 import localizationManager from '@/utils/LocalizationManager'; // Import the manager
 
+// Define base game size for consistent positioning
+const BASE_WIDTH = 1024;
+const BASE_HEIGHT = 576; // 16:9 aspect ratio
+
 // --- Preloader Scene --- 
 class PreloaderScene extends Phaser.Scene {
     private progressBar!: Phaser.GameObjects.Graphics;
@@ -92,6 +96,7 @@ class MainScene extends Phaser.Scene {
     private straySpawnTimer?: Phaser.Time.TimerEvent;
     private powerupSpawnTimer?: Phaser.Time.TimerEvent;
 
+    // Keep jump/speed variables
     private jumpVelocity: number = -700; // Was -500 
     private maxSpeedMultiplier: number = 2;
     private speedIncreaseInterval: number = 20000; // 20 seconds in ms
@@ -99,29 +104,20 @@ class MainScene extends Phaser.Scene {
     private obstacleInitialSpawnDelay: number = 2000; // ms
     private obstacleSpawnIntervalBase: number = 2500; // ms, will decrease with speed
     private obstacleVelocityXBase: number = -200; // pixels/sec, will increase with speed
-    private obstacleTypes: string[] = ['obstacle_bench', 'obstacle_bush', 'obstacle_fountain']; // Updated obstacle types based on new assets
-    private strayTypes: string[] = ['stray_dog_0', 'stray_cat_0']; // Was placeholder keys
+    private obstacleTypes: string[] = ['obstacle_bench', 'obstacle_bush', 'obstacle_fountain'];
+    private strayTypes: string[] = ['stray_dog_0', 'stray_cat_0'];
     private straySpawnIntervalBase: number = 5000; // ms, average interval
     private rescuePoints: number = 50;
     private invincibilityDuration: number = 2000; // 2 seconds in ms
-    private powerupTypes: string[] = ['powerup_red_pot']; // Was 'powerup_gold_collar'
+    private powerupTypes: string[] = ['powerup_red_pot'];
     private powerupSpawnIntervalBase: number = 15000; // ms, average interval
-
-    // Add viewport awareness to adjust UI based on screen size
-    private isMobile: boolean = false;
-    private viewport = {
-        width: 0,
-        height: 0,
-        isPortrait: false
-    };
 
     constructor() {
         super({ key: 'MainScene' });
     }
 
     preload() {
-        // Assets are now loaded in PreloaderScene
-        console.log('MainScene preload (should be empty or load scene-specific assets)');
+        console.log('MainScene preload');
     }
 
     create() {
@@ -129,27 +125,21 @@ class MainScene extends Phaser.Scene {
         this.isGameOver = false;
         this.isInvincible = false;
         this.hasGoldCollar = false;
-        this.isSlowMode = false; // Initialize slow mode
-
-        // --- Set viewport details for responsive design ---
-        this.viewport.width = this.scale.width;
-        this.viewport.height = this.scale.height;
-        this.viewport.isPortrait = this.viewport.height > this.viewport.width;
-        this.isMobile = this.viewport.width < 768 || ('ontouchstart' in window);
+        this.isSlowMode = false;
         
-        console.log(`Game viewport: ${this.viewport.width}x${this.viewport.height}, Mobile: ${this.isMobile}`);
+        // Use BASE_WIDTH and BASE_HEIGHT for positioning
+        const width = BASE_WIDTH;
+        const height = BASE_HEIGHT;
 
-        // --- Parallax Background using TileSprites ---
-        const { width, height } = this.scale;
-
+        // --- Parallax Background using TileSprites --- 
         this.bgLayer1 = this.add.tileSprite(0, 0, width, height, 'bg_layer1')
             .setOrigin(0, 0)
-            .setScrollFactor(0); // Stays fixed relative to camera
+            .setScrollFactor(0);
         this.bgLayer2 = this.add.tileSprite(0, 0, width, height, 'bg_layer2')
             .setOrigin(0, 0)
             .setScrollFactor(0);
 
-        // Scale the tile sprites' textures to fit the height
+        // Scale textures based on BASE_HEIGHT
         const bg1Texture = this.textures.get('bg_layer1').getSourceImage();
         const bg2Texture = this.textures.get('bg_layer2').getSourceImage();
         if (bg1Texture) {
@@ -159,22 +149,30 @@ class MainScene extends Phaser.Scene {
             this.bgLayer2.setTileScale(height / bg2Texture.height);
         }
 
-        // --- Ground ---
-        // Use scaleY to potentially adjust ground size if needed, or keep fixed size
-        const ground = this.physics.add.staticImage(width / 2, height - 10, 'ground_layer');
-        // Increase ground display height from 20 to 60 to show more of the texture
-        ground.setSize(width, 60 * (height / this.bgLayer1.height)).setDisplaySize(width, 60 * (height / this.bgLayer1.height)); // Adjust ground height to show more texture
+        // --- Ground --- 
+        // Position relative to BASE_HEIGHT
+        const groundYPosition = height - 10; // Position near bottom of base height
+        const groundDisplayHeight = 60 * (height / (bg1Texture?.height || height)); // Calculate based on base height
+        const ground = this.physics.add.staticImage(width / 2, groundYPosition, 'ground_layer');
+        ground.setSize(width, groundDisplayHeight).setDisplaySize(width, groundDisplayHeight);
         ground.refreshBody();
         ground.setDepth(1); // Ensure ground is above furthest background layer
+        console.log(`Ground Y: ${ground.y}, Ground Display Height: ${ground.displayHeight}`);
 
         // --- Player --- 
+        // Position relative to BASE_HEIGHT and ground
         const playerX = 100;
-        const playerY = height - 100;
-        this.player = this.physics.add.sprite(playerX, playerY, 'game_atlas', 'mascot_idle'); // Use frame name
+        const playerY = height - (groundDisplayHeight + 50); // Position above the calculated ground height
+        this.player = this.physics.add.sprite(playerX, playerY, 'game_atlas', 'mascot_run_0'); // Start with run frame
         this.player.setBounce(0.1);
-        this.player.setCollideWorldBounds(false);
-        this.player.setDepth(2); // Ensure player is above background and ground
+        this.player.setCollideWorldBounds(false); // We need world bounds if using fixed size
+        this.player.setDepth(2);
         this.physics.add.collider(this.player, ground);
+        console.log(`Player Y: ${this.player.y}`);
+
+        // Set physics world bounds based on BASE dimensions
+        this.physics.world.setBounds(0, 0, width, height);
+        this.cameras.main.setBounds(0, 0, width, height); // Ensure camera matches world
 
         // --- Player Animations ---
         this.anims.create({
@@ -183,21 +181,16 @@ class MainScene extends Phaser.Scene {
             frameRate: 12, // Adjust frame rate as needed
             repeat: -1 // Loop indefinitely
         });
-
-        // Play the run animation
         this.player.play('run', true);
 
         // --- Obstacles --- 
         this.obstacles = this.physics.add.group();
         this.physics.add.collider(this.player, this.obstacles, this.handlePlayerObstacleCollision as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback, undefined, this);
         this.physics.add.collider(this.obstacles, ground);
-        // Obstacles should be above background but potentially behind player
-        // Setting depth dynamically in spawn or via group might be needed later
 
         // --- Strays --- 
         this.strays = this.physics.add.group();
         this.physics.add.overlap(this.player, this.strays, this.handlePlayerStrayOverlap as Phaser.Types.Physics.Arcade.ArcadePhysicsCallback, undefined, this);
-        // Strays depth similar to obstacles
 
         // --- Powerups Group --- 
         this.powerups = this.physics.add.group();
@@ -206,26 +199,22 @@ class MainScene extends Phaser.Scene {
         // --- Input for Jump --- 
         this.input.on('pointerdown', () => this.jump());
         this.input.keyboard?.on('keydown-SPACE', () => this.jump());
-        // Add keyboard toggle for Slow Mode (TEMP - replace with UI toggle later)
         this.input.keyboard?.on('keydown-S', () => this.toggleSlowMode());
 
-        // --- Score & Rescues Display ---
+        // --- Score & Rescues Display --- 
         this.score = 0;
         this.rescues = 0;
-        
-        // Use responsive font sizes based on device
-        const textSize = this.isMobile ? '18px' : '24px';
-        const textPadding = this.isMobile ? 10 : 16;
-        
+        // Use fixed text size appropriate for BASE resolution
+        const textSize = '24px'; // Fixed size
+        const textPadding = 16; // Fixed padding
         this.scoreText = this.add.text(textPadding, textPadding, this.getLocalizedScoreText(), { 
             fontSize: textSize, color: '#ffffff' 
-        }).setDepth(10);
-        
-        this.rescuesText = this.add.text(textPadding, this.isMobile ? 35 : 48, this.getLocalizedRescuesText(), { 
+        }).setDepth(10).setScrollFactor(0); // Keep score fixed on screen
+        this.rescuesText = this.add.text(textPadding, 48, this.getLocalizedRescuesText(), { 
             fontSize: textSize, color: '#ffffff' 
-        }).setDepth(10);
+        }).setDepth(10).setScrollFactor(0); // Keep rescues fixed on screen
         
-        // --- Background Music ---
+        // --- Background Music --- 
         // Start background music (looping)
         // this.sound.play('music_bg', { loop: true, volume: 0.5 }); // Disabled audio // Adjust volume
 
@@ -270,25 +259,23 @@ class MainScene extends Phaser.Scene {
         if (this.isGameOver) return;
         const typeIndex = Phaser.Math.Between(0, this.obstacleTypes.length - 1);
         const obstacleKey = this.obstacleTypes[typeIndex];
-        const spawnX = this.scale.width + 100;
-        const spawnY = this.scale.height - 20;
-        
-        // Get retrieves inactive or creates new
-        const obstacle = this.obstacles?.get(spawnX, spawnY, 'game_atlas', obstacleKey) as Phaser.Physics.Arcade.Sprite;
+        // Spawn relative to BASE_WIDTH and ground position
+        const spawnX = BASE_WIDTH + 100;
+        // Ensure obstacle Y position aligns with the ground level
+        const groundY = BASE_HEIGHT - 10; // Align with ground Y position
+        const obstacle = this.obstacles?.get(spawnX, groundY, 'game_atlas', obstacleKey) as Phaser.Physics.Arcade.Sprite;
         if (obstacle) {
              obstacle.setActive(true);
              obstacle.setVisible(true);
-             obstacle.setOrigin(0.5, 1);
-             this.physics.world.enable(obstacle); // Enable physics if retrieved inactive
-             // Reset state for reused obstacles
+             obstacle.setOrigin(0.5, 1); // Origin at bottom-center
+             this.physics.world.enable(obstacle);
              obstacle.setVelocityX(this.obstacleVelocityXBase * this.getCurrentGameSpeedMultiplier());
              obstacle.setImmovable(true); 
              if (obstacle.body) {
                  (obstacle.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
-                 // Reset potential physics states if necessary (e.g., angular velocity)
              }
              obstacle.setDepth(2);
-             obstacle.clearTint(); // Ensure tint is cleared if reused
+             obstacle.clearTint();
          }
          this.obstacleSpawnTimer?.destroy();
          this.obstacleSpawnTimer = this.time.addEvent({
@@ -303,23 +290,22 @@ class MainScene extends Phaser.Scene {
         if (this.isGameOver) return;
         const typeIndex = Phaser.Math.Between(0, this.strayTypes.length - 1);
         const strayKey = this.strayTypes[typeIndex];
-        const spawnX = this.scale.width + Phaser.Math.Between(50, 150);
-        const spawnY = this.scale.height - Phaser.Math.Between(30, 100);
-        
-        // Get retrieves inactive or creates new
+        // Spawn relative to BASE_WIDTH and ground position
+        const spawnX = BASE_WIDTH + Phaser.Math.Between(50, 150);
+        const groundY = BASE_HEIGHT - 10; // Align with ground Y position
+        const spawnY = groundY - Phaser.Math.Between(5, 40); // Slightly above ground
         const stray = this.strays?.get(spawnX, spawnY, 'game_atlas', strayKey) as Phaser.Physics.Arcade.Sprite;
         if (stray) {
             stray.setActive(true);
             stray.setVisible(true);
-            stray.setOrigin(0.5, 1);
-            this.physics.world.enable(stray); // Enable physics if retrieved inactive
-            // Reset state for reused strays
+            stray.setOrigin(0.5, 1); // Origin at bottom-center
+            this.physics.world.enable(stray);
             stray.setVelocityX(this.obstacleVelocityXBase * this.getCurrentGameSpeedMultiplier() * 0.2);
             if (stray.body) {
                 (stray.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
             }
             stray.setDepth(2);
-            stray.clearTint(); // Ensure tint is cleared if reused
+            stray.clearTint();
         }
         this.straySpawnTimer?.destroy();
         this.straySpawnTimer = this.time.addEvent({
@@ -332,23 +318,21 @@ class MainScene extends Phaser.Scene {
 
     spawnPowerup() {
         if (this.isGameOver) return;
-        const powerupKey = this.powerupTypes[0]; // Assuming only one type for now
-        const spawnX = this.scale.width + Phaser.Math.Between(100, 200);
-        const spawnY = this.scale.height - Phaser.Math.Between(50, 200);
-        
-        // Get retrieves inactive or creates new
+        const powerupKey = this.powerupTypes[0];
+        // Spawn relative to BASE_WIDTH and a random height
+        const spawnX = BASE_WIDTH + Phaser.Math.Between(100, 200);
+        const spawnY = BASE_HEIGHT - Phaser.Math.Between(50, 200); // Random height from bottom
         const powerup = this.powerups?.get(spawnX, spawnY, 'game_atlas', powerupKey) as Phaser.Physics.Arcade.Sprite;
         if (powerup) {
             powerup.setActive(true);
             powerup.setVisible(true);
-            this.physics.world.enable(powerup); // Enable physics if retrieved inactive
-            // Reset state for reused powerups
+            this.physics.world.enable(powerup);
             powerup.setVelocityX(this.obstacleVelocityXBase * this.getCurrentGameSpeedMultiplier() * 0.5);
             if (powerup.body) {
                 (powerup.body as Phaser.Physics.Arcade.Body).setAllowGravity(false);
             }
             powerup.setDepth(3);
-            powerup.clearTint(); // Ensure tint is cleared if reused
+            powerup.clearTint();
         }
         this.powerupSpawnTimer?.destroy();
         this.powerupSpawnTimer = this.time.addEvent({
@@ -486,19 +470,19 @@ class MainScene extends Phaser.Scene {
         const finalRescues = this.rescues;
         console.log(`Game Over! Score: ${finalScore}, Rescues: ${finalRescues}`);
 
-        // --- End Screen UI with responsive styling --- 
-        const centerX = this.scale.width / 2;
-        const centerY = this.scale.height / 2;
+        // --- End Screen UI positioned relative to BASE dimensions --- 
+        const centerX = BASE_WIDTH / 2;
+        const centerY = BASE_HEIGHT / 2;
         
-        // Responsive font sizes
-        const titleSize = this.isMobile ? '48px' : '64px';
-        const scoreSize = this.isMobile ? '22px' : '28px';
-        const buttonTextSize = this.isMobile ? '24px' : '32px';
-        const joinButtonTextSize = this.isMobile ? '28px' : '36px';
+        // Use fixed font sizes appropriate for BASE resolution
+        const titleSize = '64px';
+        const scoreSize = '28px';
+        const buttonTextSize = '32px';
+        const joinButtonTextSize = '36px';
         
-        // Button layout adjustments
-        const buttonYOffset = this.isMobile ? 30 : 50;
-        const joinButtonYOffset = this.isMobile ? 100 : 120;
+        // Use fixed button offsets
+        const buttonYOffset = 50;
+        const joinButtonYOffset = 120;
         
         const buttonStyle = { 
             fontSize: buttonTextSize, 
@@ -523,34 +507,33 @@ class MainScene extends Phaser.Scene {
             shadow: { color: '#000000', fill: true, offsetX: 2, offsetY: 2, blur: 4 }
         };
 
-        // Semi-transparent background overlay
-        this.add.rectangle(centerX, centerY, this.scale.width, this.scale.height, 0x000000, 0.7).setDepth(10);
-
-        // Game Over Text
-        this.add.text(centerX, centerY - (this.isMobile ? 120 : 150), localizationManager.getTranslation('gameOver'), { 
+        // Add elements relative to centerX, centerY
+        this.add.rectangle(centerX, centerY, BASE_WIDTH, BASE_HEIGHT, 0x000000, 0.7).setDepth(10).setScrollFactor(0);
+        this.add.text(centerX, centerY - 150, localizationManager.getTranslation('gameOver'), { 
             fontSize: titleSize, 
             color: '#ff0000',
             shadow: { color: '#000000', fill: true, offsetX: 2, offsetY: 2, blur: 5 }
-        }).setOrigin(0.5).setDepth(11);
+        }).setOrigin(0.5).setDepth(11).setScrollFactor(0);
 
         // Final Score Text
-        this.add.text(centerX, centerY - (this.isMobile ? 60 : 80), 
+        this.add.text(centerX, centerY - 80, 
             localizationManager.getFormattedTranslation('finalScore', { score: finalScore }), 
             scoreStyle
-        ).setOrigin(0.5).setDepth(11);
+        ).setOrigin(0.5).setDepth(11).setScrollFactor(0);
 
         // Final Rescues Text
-        this.add.text(centerX, centerY - (this.isMobile ? 25 : 40), 
+        this.add.text(centerX, centerY - 40, 
             localizationManager.getFormattedTranslation('finalRescues', { rescues: finalRescues }), 
             scoreStyle
-        ).setOrigin(0.5).setDepth(11);
+        ).setOrigin(0.5).setDepth(11).setScrollFactor(0);
 
         // Play Again Button
         const playAgainButton = this.add.text(centerX, centerY + buttonYOffset, localizationManager.getTranslation('playAgain'), buttonStyle)
             .setOrigin(0.5)
             .setDepth(11)
             .setPadding(15, 10, 15, 10)
-            .setInteractive({ useHandCursor: true });
+            .setInteractive({ useHandCursor: true })
+            .setScrollFactor(0);
 
         playAgainButton.on('pointerdown', () => {
             console.log('Restarting scene...');
@@ -563,7 +546,8 @@ class MainScene extends Phaser.Scene {
             .setOrigin(0.5)
             .setDepth(11)
             .setPadding(20, 15, 20, 15)
-            .setInteractive({ useHandCursor: true });
+            .setInteractive({ useHandCursor: true })
+            .setScrollFactor(0);
 
         joinButton.on('pointerdown', () => {
             console.log('Redirecting to App Store...');
@@ -633,26 +617,20 @@ class MainScene extends Phaser.Scene {
         if (this.isGameOver) return;
         const effectiveSpeed = this.getCurrentGameSpeedMultiplier();
 
-        // --- Parallax Background Scrolling using TileSprites ---
-        const scrollSpeedLayer1 = 0.25 * effectiveSpeed; // Adjust speed factor as needed
-        const scrollSpeedLayer2 = 0.5 * effectiveSpeed; // Adjust speed factor as needed
+        // --- Background Scrolling --- 
+        // Speed calculation is fine
+        const scrollSpeedLayer1 = 0.25 * effectiveSpeed;
+        const scrollSpeedLayer2 = 0.5 * effectiveSpeed;
+        if (this.bgLayer1) { this.bgLayer1.tilePositionX += scrollSpeedLayer1; }
+        if (this.bgLayer2) { this.bgLayer2.tilePositionX += scrollSpeedLayer2; }
 
-        // Update tilePositionX for seamless scrolling
-        if (this.bgLayer1) {
-            this.bgLayer1.tilePositionX += scrollSpeedLayer1;
-        }
-        if (this.bgLayer2) {
-            this.bgLayer2.tilePositionX += scrollSpeedLayer2;
-        }
-
-        // --- Score Update ---
-        // Score increase might or might not be affected by slow mode - design decision
-        // Currently using effective speed, so score increases slower in slow mode.
+        // --- Score Update --- 
         this.score += delta * 0.01 * effectiveSpeed;
+        // Score text update is fine (already setScrollFactor(0))
         this.scoreText?.setText(this.getLocalizedScoreText());
-        // Rescues text updated in overlap handler
 
-        // --- Object Cleanup (Use killAndHide for pooling) ---
+        // --- Object Cleanup --- 
+        // Logic remains the same, checks position relative to object width
         this.obstacles?.children.iterate((child) => {
             const obstacle = child as Phaser.Physics.Arcade.Sprite;
             if (obstacle && obstacle.active && obstacle.x < -obstacle.width) {
@@ -719,28 +697,24 @@ class MainScene extends Phaser.Scene {
     }
 }
 
-// Update the scale config to handle mobile viewport better
+// Define the Phaser game configuration using BASE dimensions
 const config: Phaser.Types.Core.GameConfig = {
     type: Phaser.AUTO,
-    width: '100%',
-    height: '100%',
+    width: BASE_WIDTH, // Use base width
+    height: BASE_HEIGHT, // Use base height
     parent: 'phaser-game-container',
     physics: {
         default: 'arcade',
         arcade: {
-            gravity: { x: 0, y: 770 }, // Was 750
-            // Disable debug rendering
+            gravity: { x: 0, y: 770 },
             debug: false, 
-            // debug: process.env.NODE_ENV === 'development', 
         },
     },
-    // Start with PreloaderScene, then MainScene
     scene: [PreloaderScene, MainScene],
     scale: {
-        // Change scale mode to ENVELOP to maintain aspect ratio while filling screen
-        mode: Phaser.Scale.ScaleModes.ENVELOP, // Was RESIZE
+        // Try WIDTH_CONTROLS_HEIGHT mode
+        mode: Phaser.Scale.ScaleModes.WIDTH_CONTROLS_HEIGHT, // Was FIT
         autoCenter: Phaser.Scale.Center.CENTER_BOTH,
-        fullscreenTarget: 'phaser-game-container',
     },
     backgroundColor: '#2d2d2d',
     input: {
@@ -782,20 +756,35 @@ const GameCanvas: React.FC = () => {
             return;
         }
         gameInstance.current = new Phaser.Game({ ...config, parent: gameContainerRef.current });
+
+        // Remove explicit resize handler for now
+        /*
+        const handleResize = () => {
+            if (gameInstance.current && gameInstance.current.scale) {
+                gameInstance.current.scale.refresh();
+            }
+        };
+        window.addEventListener('resize', handleResize);
+        */
+
         return () => {
+            // window.removeEventListener('resize', handleResize);
             gameInstance.current?.destroy(true);
             gameInstance.current = null;
         };
     }, []);
 
+    // Minimal container styling, let Phaser handle scaling
     return <div id="phaser-game-container" ref={gameContainerRef} style={{ 
         width: '100%', 
         height: '100%',
         position: 'absolute',
         top: 0,
         left: 0,
-        overflow: 'hidden',
-        touchAction: 'none' // Prevent default touch behaviors
+        // Add overflow visible just in case
+        overflow: 'visible',
+        // Ensure no extra overflow or sizing rules interfere
+        // touchAction: 'none' // Keep touch action prevention
     }} />;
 };
 
